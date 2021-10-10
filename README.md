@@ -8,3 +8,6 @@ This is the repository of a senior project titled "Essential Protein Prediction 
 ## Members
 - [Burcu Arslan](https://github.com/burcula)
 - [Abdullah Saydemir](https://github.com/Saydemr)
+
+## Supervisor
+- [Emre Sefer]()
