@@ -10,4 +10,4 @@ This is the repository of a senior project titled "Essential Protein Prediction 
 - [Abdullah Saydemir](https://github.com/Saydemr)
 
 ## Supervisor
-- [Emre Sefer](www.emresefer.com)
+- [Emre Sefer](https://www.emresefer.com)
