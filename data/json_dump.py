@@ -1,8 +1,9 @@
-
+import numpy as np
 from os import unlink
 
 nodes = []
 links = []
+
 
 with open("BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.203.tab3.txt", 'r') as f:
     f.readline()
