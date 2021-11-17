@@ -16,6 +16,9 @@ with open("BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.203.tab3.txt") as
     for line in f:
         line = line.strip()
         line = line.split("\t")
+        if line[3] == line[4]:
+            continue
+
         ppi_graph.add_edge(int(line[3]), int(line[4]))
         
         if line[3] not in id_map:
