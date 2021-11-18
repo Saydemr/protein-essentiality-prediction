@@ -4,12 +4,14 @@ from networkx.readwrite import json_graph
 from random import choices
 from collections import Counter
 import json
+import numpy as np
 
 print("Loading graph...")
 ppi_graph = nx.Graph() 
-
+'''
 id_map = {}
 id_map_inv = {}
+id_map_int = {}
 with open("BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.203.tab3.txt") as f:
     f.readline()
     i = 0
@@ -23,16 +25,98 @@ with open("BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.203.tab3.txt") as
         
         if line[3] not in id_map:
             id_map[line[3]] = i
+            id_map[int(line[3])] = i
             id_map_inv[i] = int(line[3])
             i += 1
         if line[4] not in id_map:
             id_map[line[4]] = i
+            id_map[int(line[4])] = i
             id_map_inv[i] = int(line[4])
             i += 1
 
-# 0 : training
-# 1 : test
-# 2 : validation
+'''
+
+id_map = {}
+id_map_int = {}
+id_map_inv = {}
+id_map_inv_int = {}
+
+with open("BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.203.tab3.txt") as f:
+    f.readline()
+    i = 0
+    for line in f:
+        line = line.strip()
+        line = line.split("\t")
+        if line[3] == line[4]:
+            continue
+
+        if int(line[3]) not in id_map_int and int(line[4]) not in id_map_int:
+            ppi_graph.add_edge(i,i+1)
+
+            id_map[line[3]] = i
+            id_map_int[int(line[3])] = i
+            id_map_inv[i] = line[3]
+            id_map_inv_int[i] = int(line[3])
+            ppi_graph.nodes[i]['id'] = i
+
+            id_map[line[4]] = i+1
+            id_map_int[int(line[4])] = i+1
+            id_map_inv[i+1] = line[4]
+            id_map_inv_int[i+1] = int(line[4])
+            ppi_graph.nodes[i+1]['id'] = i+1
+            
+            #print(i, i+1)
+            i+=2
+
+        elif int(line[3]) in id_map_int and int(line[4]) not in id_map_int:
+            
+            ppi_graph.add_edge(id_map_int[int(line[3])],i)
+
+            id_map[line[4]] = i
+            id_map_int[int(line[4])] = i
+            id_map_inv[i] = line[4]
+            id_map_inv_int[i] = int(line[4])
+
+            ppi_graph.nodes[i]['id'] = i
+            #print(id_map_int[int(line[3])], i)
+            i+=1
+
+            
+        elif int(line[3]) not in id_map_int and int(line[4]) in id_map_int:
+            
+            ppi_graph.add_edge(i,id_map_int[int(line[4])])
+
+            id_map[line[3]] = i
+            id_map_int[int(line[3])] = i
+            id_map_inv[i] = line[3]
+            id_map_inv_int[i] = int(line[3])
+            ppi_graph.nodes[i]['id'] = i
+            
+            #print(i, id_map_int[int(line[4])])
+            i+=1
+
+        else:
+            ppi_graph.add_edge(id_map_int[int(line[3])],id_map_int[int(line[4])])
+    
+
+
+print(ppi_graph.nodes.data()[0])
+
+
+# 0 : training = train_removed false : test_removed true
+# 1 : test     = train_removed true  : test_removed false
+# 2 : validation = true true
+
+# train_removed
+# test_removed
+# 0: 
+# 1:
+# 2:
+
+print("Number of nodes: ", ppi_graph.number_of_nodes())
+print("Number of connected components", nx.number_connected_components(ppi_graph))
+print("Number of edges: ", ppi_graph.number_of_edges())
+
 
 population = [0, 1, 2]
 weights    = [0.8, 0.1, 0.1]
@@ -40,14 +124,14 @@ distribution_samples = choices(population, weights, k=ppi_graph.number_of_nodes(
 print(Counter(distribution_samples))
 for i in range(ppi_graph.number_of_nodes()):
     if distribution_samples[i] == 0:
-        ppi_graph.nodes[id_map_inv[i]]['test'] = False 
-        ppi_graph.nodes[id_map_inv[i]]['val']  = False 
+        ppi_graph.nodes[i]['test'] = False 
+        ppi_graph.nodes[i]['val']  = False 
     elif distribution_samples[i] == 1:
-        ppi_graph.nodes[id_map_inv[i]]['test'] = True
-        ppi_graph.nodes[id_map_inv[i]]['val']  = False
+        ppi_graph.nodes[i]['test'] = True
+        ppi_graph.nodes[i]['val']  = False
     else:
-        ppi_graph.nodes[id_map_inv[i]]['test'] = False
-        ppi_graph.nodes[id_map_inv[i]]['val']  = True
+        ppi_graph.nodes[i]['test'] = False
+        ppi_graph.nodes[i]['val']  = True
 
     #print(i)
     #print(ppi_graph.nodes[id_map_inv[i]]['test'], ppi_graph.nodes[id_map_inv[i]]['val'], sep="\t", end="\n")
@@ -56,6 +140,13 @@ for i in range(ppi_graph.number_of_nodes()):
 print("Number of nodes: ", ppi_graph.number_of_nodes())
 print("Number of connected components", nx.number_connected_components(ppi_graph))
 print("Number of edges: ", ppi_graph.number_of_edges())
+
+class_map = {}
+for i in id_map:
+    class_map[i] = np.random.randint(2, size=121).tolist()
+
 print("Writing graph to JSON file...")
-json.dump(json_graph.node_link_data(ppi_graph), fp=open("ppi-G.json", "w+")) 
-json.dump(id_map, fp=open("ppi-id_map.json", "w+"))
+json.dump(class_map, fp=open("eppugnn-class_map.json", "w+"))
+json.dump(json_graph.node_link_data(ppi_graph), fp=open("eppugnn-G.json", "w+"))
+json.dump({str(v): int(k) for k, v in id_map.items()}, fp=open("eppugnn-id_map_inv.json", "w+"))
+json.dump(id_map, fp=open("eppugnn-id_map.json", "w+"))
