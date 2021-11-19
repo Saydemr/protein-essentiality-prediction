@@ -145,8 +145,14 @@ class_map = {}
 for i in id_map:
     class_map[i] = np.random.randint(2, size=121).tolist()
 
+
+id_mappppp = {}
+for i in range(ppi_graph.number_of_nodes()):
+    id_mappppp[str(i)] = i
+
 print("Writing graph to JSON file...")
 json.dump(class_map, fp=open("eppugnn-class_map.json", "w+"))
 json.dump(json_graph.node_link_data(ppi_graph), fp=open("eppugnn-G.json", "w+"))
-json.dump({str(v): int(k) for k, v in id_map.items()}, fp=open("eppugnn-id_map_inv.json", "w+"))
-json.dump(id_map, fp=open("eppugnn-id_map.json", "w+"))
+#json.dump({str(v): int(k) for k, v in id_map.items()}, fp=open("eppugnn-id_map_inv.json", "w+"))
+json.dump(id_mappppp, fp=open("eppugnn-id_map.json", "w+"))
+#json.dump(id_map, fp=open("eppugnn-id_map.json", "w+"))
