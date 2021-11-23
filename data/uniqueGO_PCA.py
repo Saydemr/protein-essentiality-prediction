@@ -1,5 +1,4 @@
 import numpy as np
-from numpy.core.fromnumeric import mean
 from sklearn import decomposition as dc 
 
 gos =set()
