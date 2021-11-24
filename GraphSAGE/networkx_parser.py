@@ -7,7 +7,7 @@ import json
 import numpy as np
 
 print("Don't use the script anymore")
-exit()
+#exit()
 print("Loading graph...")
 ppi_graph = nx.Graph() 
 '''
@@ -99,31 +99,23 @@ with open("BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.203.tab3.txt") as
 
         else:
             ppi_graph.add_edge(id_map_int[int(line[3])],id_map_int[int(line[4])])
-    
-
-
-print(ppi_graph.nodes.data()[0])
 
 
 # 0 : training = train_removed false : test_removed true
 # 1 : test     = train_removed true  : test_removed false
 # 2 : validation = true true
 
-# train_removed
-# test_removed
-# 0: 
-# 1:
-# 2:
 
+print("Graph info...")
 print("Number of nodes: ", ppi_graph.number_of_nodes())
 print("Number of connected components", nx.number_connected_components(ppi_graph))
 print("Number of edges: ", ppi_graph.number_of_edges())
-
+print()
 
 population = [0, 1, 2]
 weights    = [0.8, 0.1, 0.1]
 distribution_samples = choices(population, weights, k=ppi_graph.number_of_nodes())
-print(Counter(distribution_samples))
+print("Number of instances in training (0), test (1) and validation (2)\n",Counter(distribution_samples),sep='\n')
 for i in range(ppi_graph.number_of_nodes()):
     if distribution_samples[i] == 0:
         ppi_graph.nodes[i]['test'] = False 
@@ -138,16 +130,42 @@ for i in range(ppi_graph.number_of_nodes()):
     #print(i)
     #print(ppi_graph.nodes[id_map_inv[i]]['test'], ppi_graph.nodes[id_map_inv[i]]['val'], sep="\t", end="\n")
 
-
+print("Checking the graph if smth is modified.")
 print("Number of nodes: ", ppi_graph.number_of_nodes())
 print("Number of connected components", nx.number_connected_components(ppi_graph))
 print("Number of edges: ", ppi_graph.number_of_edges())
+print()
+
+print("Creating class-map")
+id_name_dict ={}
+with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.203.tab3.txt') as f:
+    f.readline()
+    for line in f:
+        line = line.strip().split('\t')
+        if line[3] == line[4]:
+            continue
+        id_name_dict[line[3]] = line[7]
+        id_name_dict[line[4]] = line[8]
+
+essential_dict = set()
+with open('deg_sc.dat') as f:
+    for line in f:
+        line = line.strip().split('\t')
+        essential_dict.add(line[2])
+
 
 class_map = {}
+#print(id_map)
 for i in id_map:
-    class_map[i] = np.random.randint(2, size=121).tolist()
+    my_str = id_name_dict[i]
+    if my_str in essential_dict:
+        class_map[i] = 1
+    else:
+        class_map[i] = 0
 
+#print(class_map)
 
+print('Creating id-map')
 id_mappppp = {}
 for i in range(ppi_graph.number_of_nodes()):
     id_mappppp[str(i)] = i
