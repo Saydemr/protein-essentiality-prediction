@@ -7,7 +7,7 @@ import json
 import numpy as np
 
 print("Don't use the script anymore")
-#exit()
+exit()
 print("Loading graph...")
 ppi_graph = nx.Graph() 
 '''
@@ -116,6 +116,7 @@ population = [0, 1, 2]
 weights    = [0.8, 0.1, 0.1]
 distribution_samples = choices(population, weights, k=ppi_graph.number_of_nodes())
 print("Number of instances in training (0), test (1) and validation (2)\n",Counter(distribution_samples),sep='\n')
+print("Number of instances in training (0), test (1) and validation (2)\n",Counter(distribution_samples),sep='\n', file=open("distribution_samples.txt", "w+"))
 for i in range(ppi_graph.number_of_nodes()):
     if distribution_samples[i] == 0:
         ppi_graph.nodes[i]['test'] = False 
@@ -157,11 +158,12 @@ with open('deg_sc.dat') as f:
 class_map = {}
 #print(id_map)
 for i in id_map:
+    my_key = id_map[i]
     my_str = id_name_dict[i]
     if my_str in essential_dict:
-        class_map[i] = 1
+        class_map[my_key] = 1
     else:
-        class_map[i] = 0
+        class_map[my_key] = 0
 
 #print(class_map)
 
