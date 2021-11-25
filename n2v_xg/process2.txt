@@ -1,0 +1,48 @@
+
+An algorithmic framework for representational learning on graphs. [Nov 11 2021]
+================================================================================
+Input graph path (-i:)=graph/ppi_graph.txt
+Output graph path (-o:)=emb/ppi_emb_d32_e10_l120_w5.emb
+Number of dimensions. Default is 128 (-d:)=32
+Length of walk per source. Default is 80 (-l:)=120
+Number of walks per source. Default is 10 (-r:)=5
+Context size for optimization. Default is 10 (-k:)=10
+Number of epochs in SGD. Default is 1 (-e:)=10
+Return hyperparameter. Default is 1 (-p:)=1
+Inout hyperparameter. Default is 1 (-q:)=1
+Verbose output. (-v)=NO
+Graph is directed. (-dr)=NO
+Graph is weighted. (-w)=NO
+Output random walks instead of embeddings. (-ow)=NO
+
+An algorithmic framework for representational learning on graphs. [Nov 11 2021]
+================================================================================
+Input graph path (-i:)=graph/ppi_graph.txt
+Output graph path (-o:)=emb/ppi_emb_d32_e10_l120_w10.emb
+Number of dimensions. Default is 128 (-d:)=32
+Length of walk per source. Default is 80 (-l:)=120
+Number of walks per source. Default is 10 (-r:)=10
+Context size for optimization. Default is 10 (-k:)=10
+Number of epochs in SGD. Default is 1 (-e:)=10
+Return hyperparameter. Default is 1 (-p:)=1
+Inout hyperparameter. Default is 1 (-q:)=1
+Verbose output. (-v)=NO
+Graph is directed. (-dr)=NO
+Graph is weighted. (-w)=NO
+Output random walks instead of embeddings. (-ow)=NO
+
+An algorithmic framework for representational learning on graphs. [Nov 11 2021]
+================================================================================
+Input graph path (-i:)=graph/ppi_graph.txt
+Output graph path (-o:)=emb/ppi_emb_d32_e10_l120_w20.emb
+Number of dimensions. Default is 128 (-d:)=32
+Length of walk per source. Default is 80 (-l:)=120
+Number of walks per source. Default is 10 (-r:)=20
+Context size for optimization. Default is 10 (-k:)=10
+Number of epochs in SGD. Default is 1 (-e:)=10
+Return hyperparameter. Default is 1 (-p:)=1
+Inout hyperparameter. Default is 1 (-q:)=1
+Verbose output. (-v)=NO
+Graph is directed. (-dr)=NO
+Graph is weighted. (-w)=NO
+Output random walks instead of embeddings. (-ow)=NO
