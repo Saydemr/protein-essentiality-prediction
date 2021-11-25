@@ -35,9 +35,9 @@ with open(name) as emb:
         for line in emb:
             line = line.strip().split(' ')
             if first_line:
-                out.write("protein_id,")
+                out.write("Protein_ID,")
                 for i in range(1,len(line)):
-                    out.write("emb_" + str(i) + ',')
+                    out.write("Emb_" + str(i) + ',')
                 out.write('\n')
                 first_line = False
             out.write(','.join(line) + '\n')
