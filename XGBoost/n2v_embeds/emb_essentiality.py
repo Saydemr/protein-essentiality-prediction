@@ -28,7 +28,7 @@ with open (name) as emb:
                 out.write('0\n')
 
 with open(name) as emb:
-    with open(name + '.csv') as out:
+    with open(name + '.csv', "w+") as out:
         emb.readline()
         for line in emb:
             line = line.strip().split(' ')
