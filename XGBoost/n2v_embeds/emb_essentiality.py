@@ -18,7 +18,7 @@ with open('deg_sc.dat') as f:
         essential_dict.add(line[2])
 
 with open (name) as emb:
-    with open(name +'_out.txt','w+') as out:
+    with open(name +'_out.csv','w+') as out:
         emb.readline()
         for line in emb:
             line = line.strip().split(' ')
@@ -26,3 +26,10 @@ with open (name) as emb:
                 out.write('1\n')
             else:
                 out.write('0\n')
+
+with open(name) as emb:
+    with open(name + '.csv') as out:
+        emb.readline()
+        for line in emb:
+            line = line.strip().split(' ')
+            out.write(','.join(line) + '\n')
