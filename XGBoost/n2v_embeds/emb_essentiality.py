@@ -19,6 +19,7 @@ with open('deg_sc.dat') as f:
 
 with open (name) as emb:
     with open(name +'_out.csv','w+') as out:
+        out.write('Essentiality\n')
         emb.readline()
         for line in emb:
             line = line.strip().split(' ')
@@ -30,6 +31,13 @@ with open (name) as emb:
 with open(name) as emb:
     with open(name + '.csv', "w+") as out:
         emb.readline()
+        first_line = True
         for line in emb:
             line = line.strip().split(' ')
+            if first_line:
+                out.write("protein_id,")
+                for i in range(1,len(line)):
+                    out.write("emb_" + str(i) + ',')
+                out.write('\n')
+                first_line = False
             out.write(','.join(line) + '\n')
