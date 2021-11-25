@@ -1,7 +1,8 @@
-
+import sys
+name = sys.argv[1]
 
 id_name_dict ={}
-with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae.txt') as f:
+with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.203.tab3.txt') as f:
     f.readline()
     for line in f:
         line = line.strip().split('\t')
@@ -16,8 +17,8 @@ with open('deg_sc.dat') as f:
         line = line.strip().split('\t')
         essential_dict.add(line[2])
 
-with open ('ppiemb.txt') as emb:
-    with open('ppiemb_essentiality.txt','w+') as out:
+with open (name) as emb:
+    with open(name +'_out.txt','w+') as out:
         emb.readline()
         for line in emb:
             line = line.strip().split(' ')
