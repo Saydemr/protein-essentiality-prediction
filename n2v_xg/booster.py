@@ -158,7 +158,7 @@ plt.savefig(emb_csv + '_cmatrix.png')
     # {'gamma': 2.0, 'learning_rate': 0.15, 'max_depth': 7, 'reg_lambda': 20.0, 'scale_pos_weight': 1}
     
 ## Round 5
-
+'''
 param_grid = {
          'max_depth': [5, 6, 7],
          'learning_rate': [0.2, 0.15, 0.1],
@@ -414,4 +414,4 @@ disp = ConfusionMatrixDisplay(confusion_matrix=c_matrix,
                               display_labels=clf_rnd.classes_)
 disp.plot()
 #plt.show()
-plt.savefig(emb_csv + 'optimized2.png')
+plt.savefig(emb_csv + 'optimized2.png')'''
