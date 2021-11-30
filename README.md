@@ -11,3 +11,6 @@ This is the repository of a senior project titled "**E**ssential **P**rotein **P
 
 ## Supervisor
 - [Emre Sefer](http://www.emresefer.com)
+
+## Special Thanks
+- We would like to thank [Esad Simitcioglu](https://github.com/EsadSimitcioglu) for his hardware support.
