@@ -43,7 +43,7 @@ id_map_int = {}
 id_map_inv = {}
 id_map_inv_int = {}
 
-with open("BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.203.tab3.txt") as f:
+with open("BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.204.tab3.txt") as f:
     f.readline()
     i = 0
     for line in f:
@@ -139,7 +139,7 @@ print()
 
 print("Creating class-map")
 id_name_dict ={}
-with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.203.tab3.txt') as f:
+with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.204.tab3.txt') as f:
     f.readline()
     for line in f:
         line = line.strip().split('\t')
