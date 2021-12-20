@@ -13,7 +13,7 @@ f = open('eppugnn-id_map_inv.json')
 id_map = json.load(f)
 
 id_name_dict ={}
-with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.203.tab3.txt') as f:
+with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.204.tab3.txt') as f:
     f.readline()
     for line in f:
         line = line.strip().split('\t')

@@ -2,7 +2,7 @@ import sys
 name = sys.argv[1]
 
 id_name_dict ={}
-with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.203.tab3.txt') as f:
+with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.204.tab3.txt') as f:
     f.readline()
     for line in f:
         line = line.strip().split('\t')
