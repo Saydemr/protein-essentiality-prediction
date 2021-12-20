@@ -1,4 +1,5 @@
-
+import json
+import numpy as np
 
 nhi2gene = {}
 with open('GPL90-17389.txt', 'r') as f:
@@ -25,5 +26,33 @@ with open('GSE3431_series_matrix.txt', 'r') as f:
                 g.write(nhi2gene[check] + '\t' + '\t'.join(line[1:]) + '\n')
 
 
-with open('GSE3431_series_matrix_gene.txt', 'r+') as f:
-    pass
+id_map = json.load(open('eppugnn-id_map_inv.json'))
+id_bioname_dict = {}
+
+with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.204.tab3.txt') as f:
+    f.readline()
+    for line in f:
+        line = line.strip().split('\t')
+        id_bioname_dict[line[3]] = line[5]
+        id_bioname_dict[line[4]] = line[6]
+
+ge_matrix = np.zeros((len(id_map), 36))
+name_index = {id_bioname_dict[str(id_map[v])] : v  for v in id_map.keys() }
+
+with open('GSE3431_series_matrix_gene.txt', 'r') as f:
+    for line in f:
+        line = line.strip().split('\t')
+        name = line[0]
+        ge_vector = line[1:]
+        if name not in name_index.keys():
+            continue
+        
+        index = int(name_index[name])
+        ge_matrix[index] = ge_vector
+        print(ge_matrix[index])
+
+print(ge_matrix.shape)
+print(ge_matrix[0])
+print(ge_matrix.sum())
+
+np.save('eppugnn_ge-feats.npy', ge_matrix)
