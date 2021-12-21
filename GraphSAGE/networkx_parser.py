@@ -7,36 +7,8 @@ import json
 import numpy as np
 
 print("Don't use the script anymore")
-exit()
 print("Loading graph...")
 ppi_graph = nx.Graph() 
-'''
-id_map = {}
-id_map_inv = {}
-id_map_int = {}
-with open("BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.203.tab3.txt") as f:
-    f.readline()
-    i = 0
-    for line in f:
-        line = line.strip()
-        line = line.split("\t")
-        if line[3] == line[4]:
-            continue
-
-        ppi_graph.add_edge(int(line[3]), int(line[4]))
-        
-        if line[3] not in id_map:
-            id_map[line[3]] = i
-            id_map[int(line[3])] = i
-            id_map_inv[i] = int(line[3])
-            i += 1
-        if line[4] not in id_map:
-            id_map[line[4]] = i
-            id_map[int(line[4])] = i
-            id_map_inv[i] = int(line[4])
-            i += 1
-
-'''
 
 id_map = {}
 id_map_int = {}
@@ -173,8 +145,8 @@ for i in range(ppi_graph.number_of_nodes()):
     id_mappppp[str(i)] = i
 
 print("Writing graph to JSON file...")
-json.dump(class_map, fp=open("eppugnn-class_map.json", "w+"))
-json.dump(json_graph.node_link_data(ppi_graph), fp=open("eppugnn-G.json", "w+"))
-json.dump({str(v): int(k) for k, v in id_map.items()}, fp=open("eppugnn-id_map_inv.json", "w+"))
-json.dump(id_mappppp, fp=open("eppugnn-id_map.json", "w+"))
-json.dump(id_map, fp=open("eppugnn-id_map_dummy.json", "w+"))
+json.dump(class_map, fp=open("sc_eppugnn-class_map.json", "w+"))
+json.dump(json_graph.node_link_data(ppi_graph), fp=open("sc_eppugnn-G.json", "w+"))
+json.dump({str(v): int(k) for k, v in id_map.items()}, fp=open("sc_eppugnn-id_map_inv.json", "w+"))
+json.dump(id_mappppp, fp=open("sc_eppugnn-id_map.json", "w+"))
+json.dump(id_map, fp=open("sc_eppugnn-id_map_dummy.json", "w+"))
