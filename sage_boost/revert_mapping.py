@@ -9,7 +9,7 @@ if len(sys.argv) < 2:
     sys.exit(0)
 
 identifier = sys.argv[1]
-f = open('eppugnn-id_map_inv.json')
+f = open('sc_eppugnn-id_map_inv.json')
 id_map = json.load(f)
 
 id_name_dict ={}

@@ -1,5 +1,6 @@
 import json
 import numpy as np
+import os
 
 nhi2gene = {}
 with open('GPL90-17389.txt', 'r') as f:
@@ -8,8 +9,6 @@ with open('GPL90-17389.txt', 'r') as f:
             continue
         line = line.strip().split('\t')
         nhi2gene[line[0]] = line[1]
-
-print(len(nhi2gene))
 
 with open('GSE3431_series_matrix.txt', 'r') as f:
     with open('GSE3431_series_matrix_gene.txt', 'w+') as g:
@@ -26,7 +25,7 @@ with open('GSE3431_series_matrix.txt', 'r') as f:
                 g.write(nhi2gene[check] + '\t' + '\t'.join(line[1:]) + '\n')
 
 
-id_map = json.load(open('eppugnn-id_map_inv.json'))
+id_map = json.load(open('sc_eppugnn-id_map_inv.json'))
 id_bioname_dict = {}
 
 with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.204.tab3.txt') as f:
@@ -49,10 +48,6 @@ with open('GSE3431_series_matrix_gene.txt', 'r') as f:
         
         index = int(name_index[name])
         ge_matrix[index] = ge_vector
-        print(ge_matrix[index])
-
-print(ge_matrix.shape)
-print(ge_matrix[0])
-print(ge_matrix.sum())
 
 np.save('eppugnn_ge-feats.npy', ge_matrix)
+os.remove('GSE3431_series_matrix_gene.txt')

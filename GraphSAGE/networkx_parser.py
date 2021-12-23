@@ -6,7 +6,7 @@ from collections import Counter
 import json
 import numpy as np
 
-print("Don't use the script anymore")
+exit()
 print("Loading graph...")
 ppi_graph = nx.Graph() 
 
