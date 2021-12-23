@@ -84,6 +84,11 @@ print("Number of connected components", nx.number_connected_components(ppi_graph
 print("Number of edges: ", ppi_graph.number_of_edges())
 print()
 
+with open("sc_ppi_graph.txt", "w+") as f:
+    for e in ppi_graph.edges():
+        a,b = e
+        f.write(str(id_map_inv_int[a]) + " " + str(id_map_inv_int[b]) + "\n")
+
 population = [0, 1, 2]
 weights    = [0.8, 0.1, 0.1]
 distribution_samples = choices(population, weights, k=ppi_graph.number_of_nodes())
