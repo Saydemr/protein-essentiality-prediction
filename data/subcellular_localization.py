@@ -4,7 +4,7 @@ import json
 
 locations = ['Nucleus', 'Cytosol', 'Cytoskeleton', 'Peroxisome', 'Vacuole', 'Endoplasmic reticulum', 'Golgi apparatus', 'Plasma membrane', 'Endosome', 'Extracellular space', 'Mitochondrion'] 
 
-id_map = json.load(open('eppugnn-id_map_inv.json'))
+id_map = json.load(open('sc_eppugnn-id_map_inv.json'))
 id_name_dict ={}
 
 with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.204.tab3.txt') as f:
@@ -29,4 +29,4 @@ with open('yeast_compartment_knowledge_full.tsv', 'r') as f:
         sl_matrix[index, locations.index(sl_feature)] = 1
 
 
-np.save('eppugnn_subcellular-feats.npy', sl_matrix)
+np.save('eppugnn_sl-feats.npy', sl_matrix)
