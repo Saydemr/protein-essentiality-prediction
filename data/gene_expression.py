@@ -49,5 +49,5 @@ with open('GSE3431_series_matrix_gene.txt', 'r') as f:
         index = int(name_index[name])
         ge_matrix[index] = ge_vector
 
-np.save('eppugnn_ge-feats.npy', ge_matrix)
+np.save('sc_eppugnn_ge-feats.npy', ge_matrix)
 os.remove('GSE3431_series_matrix_gene.txt')

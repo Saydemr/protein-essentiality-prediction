@@ -1,10 +1,26 @@
 import numpy as np
 from sklearn import decomposition as dc 
 import json
+import sys
+import os
 
 locations = ['Nucleus', 'Cytosol', 'Cytoskeleton', 'Peroxisome', 'Vacuole', 'Endoplasmic reticulum', 'Golgi apparatus', 'Plasma membrane', 'Endosome', 'Extracellular space', 'Mitochondrion'] 
 
-id_map = json.load(open('sc_eppugnn-id_map_inv.json'))
+if os.path.isfile('sc_eppugnn_sl-feats.npy'):
+    os.remove('sc_eppugnn_sl-feats.npy')
+
+filename = sys.argv[1]
+
+id_map_rev = {}
+with open(filename, 'r') as f:
+    i = 0
+    f.readline()
+    for line in f:
+        line = line.strip().split(' ')
+        id_map_rev[int(line[0])] = i
+        i += 1
+
+id_map = {v: k for k, v in id_map_rev.items()}
 id_name_dict ={}
 
 with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.204.tab3.txt') as f:
@@ -27,6 +43,5 @@ with open('yeast_compartment_knowledge_full.tsv', 'r') as f:
             continue
         index = int(name_index[name])
         sl_matrix[index, locations.index(sl_feature)] = 1
-
 
 np.save('sc_eppugnn_sl-feats.npy', sl_matrix)
