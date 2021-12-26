@@ -17,15 +17,15 @@ do
                     do
                         FILE="${PWD}/emb/sc_ppi_emb_d${dim}_e${epochs}_l${length}_w${walk}_k${cont}_p${retpar}.emb"
                         if [ -f $FILE ]; then
+                            echo "$FILE exists"
                             python3 subcellular_localization.py $FILE &
                             python3 gene_expression.py $FILE &
                             wait
-                            for option in 2 3 4
+                            for option in 1 2 3 4
                             do
                                 python3 embedding.py $FILE $option
                                 log_file="log/last${option}.csv"
                                 echo -n "${dim},${epochs},${length},${walk},${cont},${retpar}," >> $log_file
-                                
                                 if [[ $option -eq 1 ]]
                                 then
                                     emb_filename="csv_imp/sc_ppi_emb_d${dim}_e${epochs}_l${length}_w${walk}_k${cont}_p${retpar}.emb.csv"
@@ -45,8 +45,8 @@ do
                                     emb_filename="csv_imp_sl_ge/sc_ppi_emb_d${dim}_e${epochs}_l${length}_w${walk}_k${cont}_p${retpar}.emb.csv"
                                     es_filename="csv_imp_sl_ge/sc_ppi_emb_d${dim}_e${epochs}_l${length}_w${walk}_k${cont}_p${retpar}.emb_out.csv"
                                     python3 boost.py $emb_filename $es_filename $option >> $log_file
-                                fi
-                            done
+                               fi
+                           done
                         fi
                     done
                 done
