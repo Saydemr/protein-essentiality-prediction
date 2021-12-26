@@ -20,7 +20,7 @@ do
                             python3 subcellular_localization.py $FILE &
                             python3 gene_expression.py $FILE &
                             wait
-                            for option in 1 2 3 4
+                            for option in 2 3 4
                             do
                                 python3 embedding.py $FILE $option
                                 log_file="log/last${option}.csv"
@@ -30,22 +30,22 @@ do
                                 then
                                     emb_filename="csv_imp/sc_ppi_emb_d${dim}_e${epochs}_l${length}_w${walk}_k${cont}_p${retpar}.emb.csv"
                                     es_filename="csv_imp/sc_ppi_emb_d${dim}_e${epochs}_l${length}_w${walk}_k${cont}_p${retpar}.emb_out.csv"
-                                
+                                    python3 boost.py $emb_filename $es_filename $option >> $log_file                                
                                 elif [[ $option -eq 2 ]]
                                 then
                                     emb_filename="csv_imp_sl/sc_ppi_emb_d${dim}_e${epochs}_l${length}_w${walk}_k${cont}_p${retpar}.emb.csv"
                                     es_filename="csv_imp_sl/sc_ppi_emb_d${dim}_e${epochs}_l${length}_w${walk}_k${cont}_p${retpar}.emb_out.csv"
-                                
+                                    python3 boost.py $emb_filename $es_filename $option >> $log_file
                                 elif [[ $option -eq 3 ]]
                                 then
                                     emb_filename="csv_imp_ge/sc_ppi_emb_d${dim}_e${epochs}_l${length}_w${walk}_k${cont}_p${retpar}.emb.csv"
                                     es_filename="csv_imp_ge/sc_ppi_emb_d${dim}_e${epochs}_l${length}_w${walk}_k${cont}_p${retpar}.emb_out.csv"
+                                    python3 boost.py $emb_filename $es_filename $option >> $log_file
                                 else
                                     emb_filename="csv_imp_sl_ge/sc_ppi_emb_d${dim}_e${epochs}_l${length}_w${walk}_k${cont}_p${retpar}.emb.csv"
                                     es_filename="csv_imp_sl_ge/sc_ppi_emb_d${dim}_e${epochs}_l${length}_w${walk}_k${cont}_p${retpar}.emb_out.csv"
+                                    python3 boost.py $emb_filename $es_filename $option >> $log_file
                                 fi
-                                
-                                python3 boost.py $emb_filename $es_filename >> $log_file
                             done
                         fi
                     done
