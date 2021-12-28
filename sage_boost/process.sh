@@ -16,3 +16,5 @@ do
         fi
     done
 done
+
+python3 print_sup.py
