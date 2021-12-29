@@ -14,4 +14,7 @@
 /XGBoost/n2v_embeds/BIOGRID-ORGANISM-Homo_sapiens-4.4.204.tab3.txt
 /XGBoost/n2v_embeds/BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.204.tab3.txt
 /n2v_xg/emb/
-/n2v_xg/csv/
+/n2v_xg/csv_imp/
+/n2v_xg/csv_imp_sl_ge/
+/n2v_xg/csv_imp_sl/
+/n2v_xg/csv_imp_ge/
