@@ -1,4 +1,5 @@
 *.txt
 *.npy
+!*grand*
 /n2v_xg/emb/
 /n2v_xg/csv*
