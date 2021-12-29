@@ -1,18 +1,15 @@
 import numpy as np
 import sys
 import json
+import os
 
 models = ['gcn', 'graphsage_maxpool', 'graphsage_mean', 'graphsage_meanpool', 'graphsage_seq', 'n2v']
 
-if len(sys.argv) < 2:
-    print('Usage: python revert_mapping.py <model>')
-    sys.exit(0)
+id_name_dict ={}
 
-identifier = sys.argv[1]
 f = open('sc_eppugnn-id_map_inv.json')
 id_map = json.load(f)
 
-id_name_dict ={}
 with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.204.tab3.txt') as f:
     f.readline()
     for line in f:
@@ -28,32 +25,40 @@ with open('deg_sc.dat') as f:
         line = line.strip().split('\t')
         essential_dict.add(line[2])
 
-for model in models:
-    with open('./' + model + '_' + identifier + '/' + 'val.txt', 'r') as val_txt:
-        with open ('./' + model + '_' + identifier + '/' + 'emb_out.csv', 'w+') as emb_csv:
-            emb_csv.write('Essentiality\n')
-            for line in val_txt:
-                line = line.strip().split()
-                gene_id = line[0]
-                gene_id_original = id_map[gene_id]
-                gene_name = id_name_dict[str(gene_id_original)]
-                if gene_name in essential_dict:
-                    emb_csv.write('1\n')
-                else:
-                    emb_csv.write('0\n')
+for ii in range(1, 8):
+    for model in models:
+        path_txt = './runs/' + str(ii) + '/unsup-example_data/' + model + '_small_0.000010/val.txt'
+        path_npy = './runs/' + str(ii) + '/unsup-example_data/' + model + '_small_0.000010/val.npy'
+        
+        print(path_txt)
+        print(path_npy)
+        if os.path.isfile(path_txt) and os.path.isfile(path_npy):
 
-    np_matrix = np.load('./' + model + '_' + identifier + '/' + 'val.npy')
-    with open('./' + model + '_' + identifier + '/' + 'val.txt', 'r') as val_txt:
-        with open ('./' + model + '_' + identifier + '/' + 'emb.csv', 'w+') as emb_csv:
-            emb_csv.write('Protein_ID,')
-            for i in range(np_matrix.shape[1]-1):
-                emb_csv.write('Emb_' + str(i) + ',')
-            emb_csv.write( 'Emb_' + str(np_matrix.shape[1]) + '\n')
-            i = 0
-            for line in val_txt:
-                line = line.strip().split()
-                gene_id = line[0]
-                gene_id_original = id_map[gene_id]
-                emb_csv.write(str(gene_id_original) + ',')
-                emb_csv.write(','.join(map(str, np_matrix[i])) + '\n')
-                i += 1
+            with open(path_txt, 'r') as val_txt:
+                with open ('./runs/' + str(ii) + '/unsup-example_data/' + model + '_small_0.000010/emb_out.csv', 'w+') as emb_csv:
+                    emb_csv.write('Essentiality\n')
+                    for line in val_txt:
+                        line = line.strip().split()
+                        gene_id = line[0]
+                        gene_id_original = id_map[gene_id]
+                        gene_name = id_name_dict[str(gene_id_original)]
+                        if gene_name in essential_dict:
+                            emb_csv.write('1\n')
+                        else:
+                            emb_csv.write('0\n')
+
+            np_matrix = np.load(path_npy)
+            with open(path_txt, 'r') as val_txt:
+                with open ('./runs/' + str(ii) + '/unsup-example_data/' + model + '_small_0.000010/emb.csv', 'w+') as emb_csv:
+                    emb_csv.write('Protein_ID,')
+                    for i in range(np_matrix.shape[1]-1):
+                        emb_csv.write('Emb_' + str(i) + ',')
+                    emb_csv.write( 'Emb_' + str(np_matrix.shape[1]) + '\n')
+                    i = 0
+                    for line in val_txt:
+                        line = line.strip().split()
+                        gene_id = line[0]
+                        gene_id_original = id_map[gene_id]
+                        emb_csv.write(str(gene_id_original) + ',')
+                        emb_csv.write(','.join(map(str, np_matrix[i])) + '\n')
+                        i += 1
