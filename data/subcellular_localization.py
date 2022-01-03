@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn import decomposition as dc 
 import json
-
+from sklearn.decomposition import PCA
 locations = ['Nucleus', 'Cytosol', 'Cytoskeleton', 'Peroxisome', 'Vacuole', 'Endoplasmic reticulum', 'Golgi apparatus', 'Plasma membrane', 'Endosome', 'Extracellular space', 'Mitochondrion'] 
 
 id_map = json.load(open('sc_eppugnn-id_map_inv.json'))
@@ -28,5 +28,17 @@ with open('yeast_compartment_knowledge_full.tsv', 'r') as f:
         index = int(name_index[name])
         sl_matrix[index, locations.index(sl_feature)] = 1
 
+print(np.sum(sl_matrix, axis=0))
 
-np.save('sc_eppugnn_sl-feats.npy', sl_matrix)
+print(sl_matrix.shape)
+# pca = PCA(n_components=0.99)
+# pca.fit(sl_matrix)
+
+# # print(pca.components_)
+# # print(pca.explained_variance_ratio_)
+# print(np.sum(pca.explained_variance_ratio_))
+# print(len(pca.explained_variance_ratio_))
+# # transform data
+# sl_matrix_clear = pca.transform(sl_matrix)
+# print(sl_matrix_clear.shape)
+np.save('sc_eppugnn_sl-feats.npy', sl_matrix_clear)

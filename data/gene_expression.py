@@ -1,6 +1,7 @@
 import json
 import numpy as np
 import os
+from sklearn.decomposition import PCA
 
 nhi2gene = {}
 with open('GPL90-17389.txt', 'r') as f:
@@ -49,5 +50,17 @@ with open('GSE3431_series_matrix_gene.txt', 'r') as f:
         index = int(name_index[name])
         ge_matrix[index] = ge_vector
 
-np.save('sc_eppugnn_ge-feats.npy', ge_matrix)
+print(ge_matrix.shape)
+
+# pca = PCA(n_components=0.99)
+# pca.fit(ge_matrix)
+
+# # print(pca.components_)
+# # print(pca.explained_variance_ratio_)
+# print(np.sum(pca.explained_variance_ratio_))
+# print(len(pca.explained_variance_ratio_))
+# # transform data
+# ge_matrix_clear = pca.transform(ge_matrix)
+# print(ge_matrix_clear.shape)
+np.save('sc_eppugnn_ge-feats.npy', ge_matrix_clear)
 os.remove('GSE3431_series_matrix_gene.txt')
