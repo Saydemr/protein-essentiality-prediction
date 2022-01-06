@@ -31,14 +31,4 @@ with open('yeast_compartment_knowledge_full.tsv', 'r') as f:
 print(np.sum(sl_matrix, axis=0))
 
 print(sl_matrix.shape)
-# pca = PCA(n_components=0.99)
-# pca.fit(sl_matrix)
-
-# # print(pca.components_)
-# # print(pca.explained_variance_ratio_)
-# print(np.sum(pca.explained_variance_ratio_))
-# print(len(pca.explained_variance_ratio_))
-# # transform data
-# sl_matrix_clear = pca.transform(sl_matrix)
-# print(sl_matrix_clear.shape)
-np.save('sc_eppugnn_sl-feats.npy', sl_matrix_clear)
+np.save('sc_eppugnn_sl-feats.npy', sl_matrix)

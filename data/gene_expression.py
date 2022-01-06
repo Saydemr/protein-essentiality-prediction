@@ -1,7 +1,10 @@
 import json
 import numpy as np
 import os
-from sklearn.decomposition import PCA
+import sklearn as sk
+import scipy as sp
+from scipy import sparse
+
 
 nhi2gene = {}
 with open('GPL90-17389.txt', 'r') as f:
@@ -51,16 +54,14 @@ with open('GSE3431_series_matrix_gene.txt', 'r') as f:
         ge_matrix[index] = ge_vector
 
 print(ge_matrix.shape)
-
-# pca = PCA(n_components=0.99)
-# pca.fit(ge_matrix)
-
-# # print(pca.components_)
-# # print(pca.explained_variance_ratio_)
-# print(np.sum(pca.explained_variance_ratio_))
-# print(len(pca.explained_variance_ratio_))
-# # transform data
-# ge_matrix_clear = pca.transform(ge_matrix)
-# print(ge_matrix_clear.shape)
-np.save('sc_eppugnn_ge-feats.npy', ge_matrix_clear)
+np.save('sc_eppugnn_ge-feats.npy', ge_matrix)
 os.remove('GSE3431_series_matrix_gene.txt')
+
+b = np.load('sc_eppugnn_ge-feats.npy',allow_pickle=True,fix_imports=True,encoding='latin1')
+a = np.load('sc_eppugnn_sl-feats.npy',allow_pickle=True,fix_imports=True,encoding='latin1')
+
+c = np.concatenate((a, b), axis=1)
+
+print(c.shape)
+np.save('sc_eppugnn_sl_ge-feats.npy', c)
+sp.sparse.save_npz('../grand_blend/sc_eppugnn_sl_ge-feats.npz', sparse.csr_matrix(c))

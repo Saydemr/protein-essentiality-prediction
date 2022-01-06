@@ -5,15 +5,15 @@ echo "Dimension,Epochs,Length_of_Walk,Num_Walks,Context_Size,Return_Hyperparam,A
 
 for dim in 32 64
 do
-    for epochs in 5 10
+    for epochs in 1 3
     do
         for length in 80 120
         do
             for walk in 10 20
             do
-                for cont in 5 10 20
+                for cont in 10 20
                 do
-                    for retpar in 0.5 1 1.5
+                    for retpar in 0.5 1 2
                     do
                         FILE="${PWD}/emb/sc_ppi_emb_d${dim}_e${epochs}_l${length}_w${walk}_k${cont}_p${retpar}.emb"
                         if [ -f $FILE ]; then

@@ -1,7 +1,9 @@
 # %%
 import os
+from typing import NamedTuple
 import pandas as pd
 import numpy as np
+from pandas.io.parsers import read_csv
 import xgboost as xgb
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
@@ -11,10 +13,16 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.metrics import plot_confusion_matrix
 import sys
 
+# X = read_csv('./csv_imp/sc_ppi_emb_d64_e3_l120_w20_k20_p2.emb.csv')
+
+# print(X.head())
+
+# exit()
 def booster(x_name, y_name):
 
     X = pd.read_csv(x_name) # feature array
     y = pd.read_csv(y_name) # target array
+    X.drop(columns=['Protein_ID'], inplace=True)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, stratify=y)
 
