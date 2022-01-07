@@ -25,17 +25,17 @@ with open('deg_sc.dat') as f:
         line = line.strip().split('\t')
         essential_dict.add(line[2])
 
-for ii in range(1, 8):
+for ii in range(1, 5):
     for model in models:
-        path_txt = './runs/' + str(ii) + '/unsup-example_data/' + model + '_small_0.000010/val.txt'
-        path_npy = './runs/' + str(ii) + '/unsup-example_data/' + model + '_small_0.000010/val.npy'
+        path_txt = './runs/sc_' + str(ii) + '_/unsup-example_data/' + model + '_small_0.000010/val.txt'
+        path_npy = './runs/sc_' + str(ii) + '_/unsup-example_data/' + model + '_small_0.000010/val.npy'
         
         print(path_txt)
         print(path_npy)
         if os.path.isfile(path_txt) and os.path.isfile(path_npy):
 
             with open(path_txt, 'r') as val_txt:
-                with open ('./runs/' + str(ii) + '/unsup-example_data/' + model + '_small_0.000010/emb_out.csv', 'w+') as emb_csv:
+                with open ('./runs/sc_' + str(ii) + '_/unsup-example_data/' + model + '_small_0.000010/emb_out.csv', 'w+') as emb_csv:
                     emb_csv.write('Essentiality\n')
                     for line in val_txt:
                         line = line.strip().split()
@@ -49,7 +49,7 @@ for ii in range(1, 8):
 
             np_matrix = np.load(path_npy)
             with open(path_txt, 'r') as val_txt:
-                with open ('./runs/' + str(ii) + '/unsup-example_data/' + model + '_small_0.000010/emb.csv', 'w+') as emb_csv:
+                with open ('./runs/sc_' + str(ii) + '_/unsup-example_data/' + model + '_small_0.000010/emb.csv', 'w+') as emb_csv:
                     emb_csv.write('Protein_ID,')
                     for i in range(np_matrix.shape[1]-1):
                         emb_csv.write('Emb_' + str(i) + ',')

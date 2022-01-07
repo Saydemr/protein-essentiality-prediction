@@ -7,8 +7,8 @@ for model in $StringVal
 do
     for i in 1 2 3 4 5 6 7
     do
-        emb_filename="./runs/${i}/unsup-example_data/${model}_small_0.000010/emb.csv"
-        es_filename="./runs/${i}/unsup-example_data/${model}_small_0.000010/emb_out.csv"
+        emb_filename="./runs/sc_${i}_/unsup-example_data/${model}_small_0.000010/emb.csv"
+        es_filename="./runs/sc_${i}_/unsup-example_data/${model}_small_0.000010/emb_out.csv"
 
         if [ -f $emb_filename ]; then
             echo -n "${i},${model}," >> log/logs_last.csv
@@ -16,5 +16,3 @@ do
         fi
     done
 done
-
-python3 print_sup.py
