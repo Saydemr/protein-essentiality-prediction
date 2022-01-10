@@ -14,4 +14,4 @@ This is the repository of a senior project titled "**E**ssential **P**rotein **P
 
 ## Special Thanks
 - We would like to thank [Esad Simitcioglu](https://github.com/EsadSimitcioglu) for providing on-demand hardware equipment.
-- We would like to thank [OzU AI Labs](https://github.com/EsadSimitcioglu) and [Dr.Reyhan Aydoğan](https://www.ozyegin.edu.tr/tr/akademik-kadro/reyhanaydogan) for providing necessary equipment.
+- We would like to thank [OzU AI Labs](https://ailabs.ozyegin.edu.tr/) and [Dr. Reyhan Aydoğan](https://www.ozyegin.edu.tr/tr/akademik-kadro/reyhanaydogan) for providing necessary equipment.
