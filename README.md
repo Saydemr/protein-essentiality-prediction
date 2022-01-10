@@ -10,7 +10,8 @@ This is the repository of a senior project titled "**E**ssential **P**rotein **P
 - [Abdullah Saydemir](https://github.com/Saydemr)
 
 ## Supervisor
-- [Emre Sefer](http://www.emresefer.com)
+- [Dr. Emre Sefer](http://www.emresefer.com)
 
 ## Special Thanks
-- We would like to thank [Esad Simitcioglu](https://github.com/EsadSimitcioglu) for his hardware support.
+- We would like to thank [Esad Simitcioglu](https://github.com/EsadSimitcioglu) for providing on-demand hardware equipment.
+- We would like to thank [OzU AI Labs](https://github.com/EsadSimitcioglu) and [Dr.Reyhan Aydoğan](https://www.ozyegin.edu.tr/tr/akademik-kadro/reyhanaydogan) for providing necessary equipment.
