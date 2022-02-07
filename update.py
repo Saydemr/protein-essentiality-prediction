@@ -1,18 +1,21 @@
-import os, fnmatch
-import requests
+import fnmatch
+import os
+import zipfile
 import subprocess
 import sys
-import zipfile
-
 
 
 # Install requirements
-subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt'])
+subprocess.check_call([sys.executable, '-m', 'pip',
+                      'install', '-r', 'requirements.txt'])
 
+
+import requests
 
 # Update BIOGrid data files
 BASE_URL_TEST = "https://downloads.thebiogrid.org/File/BioGRID/Release-Archive/BIOGRID-4.4.VERSION/BIOGRID-ORGANISM-4.4.VERSION.tab3.zip"
 FLAG = True
+
 
 def most_recent_available(version_number):
     """
@@ -23,6 +26,7 @@ def most_recent_available(version_number):
         return most_recent_available(version_number + 1)
     else:
         return version_number - 1
+
 
 # Get the current version
 files = fnmatch.filter(os.listdir('./data'), 'BIOGRID-ORGANISM-4.4.*.tab3.zip')
@@ -37,15 +41,18 @@ most_recent = most_recent_available(version_number)
 
 # If the next version is available, download it
 if most_recent > version_number:
-    
+
     # Download the file
-    url = "https://downloads.thebiogrid.org/Download/BioGRID/Release-Archive/BIOGRID-4.4." + str(most_recent) + "/BIOGRID-ORGANISM-4.4." + str(most_recent) + ".tab3.zip"
+    url = "https://downloads.thebiogrid.org/Download/BioGRID/Release-Archive/BIOGRID-4.4." + \
+        str(most_recent) + "/BIOGRID-ORGANISM-4.4." + \
+        str(most_recent) + ".tab3.zip"
     r = requests.get(url, stream=True)
     with open('./data/BIOGRID-ORGANISM-4.4.{}.tab3.zip'.format(most_recent), 'wb') as f:
         f.write(r.content)
-    
+
     # Unzip the file
-    zf = zipfile.ZipFile('./data/BIOGRID-ORGANISM-4.4.{}.tab3.zip'.format(most_recent), 'r')
+    zf = zipfile.ZipFile(
+        './data/BIOGRID-ORGANISM-4.4.{}.tab3.zip'.format(most_recent), 'r')
     filelist = [x for x in zf.filelist if 'Homo_sapiens' in x.filename or 'Mus_musculus' in x.filename or 'Saccharomyces_cerevisiae' in x.filename]
     for file in filelist:
         zf.extract(file, './data')
@@ -53,9 +60,15 @@ if most_recent > version_number:
     # Remove the old files if exist
     if FLAG:
         os.remove('./data/BIOGRID-ORGANISM-4.4.{}.tab3.zip'.format(version_number))
-        os.remove('./data/BIOGRID-ORGANISM-Homo_sapiens-4.4.{}.tab3.txt'.format(version_number))
-        os.remove('./data/BIOGRID-ORGANISM-Saccharomyces_cerevisiae*-4.4.{}.tab3.txt'.format(version_number))
-        os.remove('./data/BIOGRID-ORGANISM-Mus_musculus-4.4.{}.tab3.txt'.format(version_number))    
+        os.remove(
+            './data/BIOGRID-ORGANISM-Homo_sapiens-4.4.{}.tab3.txt'.format(version_number))
+        os.remove(
+            './data/BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.{}.tab3.txt'.format(version_number))
+        os.remove(
+            './data/BIOGRID-ORGANISM-Mus_musculus-4.4.{}.tab3.txt'.format(version_number))
 else:
     print("Most recent version")
 
+# Download gene expression data
+
+# Download the subcellular localization data
