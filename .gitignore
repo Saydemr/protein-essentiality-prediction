@@ -1,6 +1,11 @@
 *.txt
 *.npy
 *.zip
-!*grand*
+*.gz
+*.dat
+*.tsv
 /n2v_xg/emb/
 /n2v_xg/csv*
+
+!requirements.txt
+!*grand*
