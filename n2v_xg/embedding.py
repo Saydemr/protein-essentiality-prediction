@@ -1,27 +1,24 @@
+import json
 import sys
 import os
 import numpy as np
 
+full_name = {'sc': 'Saccharomyces_cerevisiae', 'mm': 'Mus_musculus', 'hs': 'Homo_sapiens'}
+
 name = sys.argv[1]
 option = int(sys.argv[2])
+organism = sys.argv[3]
 
-id_name_dict ={}
-with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.204.tab3.txt') as f:
-    f.readline()
-    for line in f:
-        line = line.strip().split('\t')
-        if line[3] == line[4]:
-            continue
-        id_name_dict[line[3]] = line[7]
-        id_name_dict[line[4]] = line[8]
+id_name_dict = json.load('../data/{}-id_name_dict.json'.format(organism))
+
 
 essential_dict = set()
-with open('deg_sc.dat') as f:
+with open('../data/deg_{}.dat'.format(organism)) as f:
     for line in f:
         line = line.strip().split('\t')
         essential_dict.add(line[2])
 
-location = name.split("/")
+location = name.split("/") 
 path_str = "/".join(location[:-2])
 
 if option == 1:

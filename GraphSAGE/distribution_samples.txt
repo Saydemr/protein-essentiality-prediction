@@ -1,3 +1,0 @@
-Number of instances in training (0), test (1) and validation (2)
-
-Counter({0: 5947, 1: 741, 2: 661})

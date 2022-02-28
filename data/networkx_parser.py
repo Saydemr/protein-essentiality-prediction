@@ -12,8 +12,7 @@ import argparse
 import os
 import fnmatch
 
-full_name = {'sc': 'Saccharomyces_cerevisiae',
-             'mm': 'Mus_musculus', 'hs': 'Homo_sapiens'}
+full_name = {'sc': 'Saccharomyces_cerevisiae', 'mm': 'Mus_musculus', 'hs': 'Homo_sapiens'}
 
 
 def main(opt):
@@ -21,7 +20,6 @@ def main(opt):
         create_graph(opt['organism'])
     else:
         create_graph('sc')
-        create_graph('mm')
         create_graph('hs')
 
 
@@ -53,61 +51,64 @@ def create_graph(organism):
         for line in f:
             line = line.strip()
             line = line.split("\t")
-            if line[3] == line[4]:
+            if line[1] == line[2]:
                 continue
 
-            id_name_dict[line[3]] = line[7]
-            id_name_dict[line[4]] = line[8]
+            id_name_dict[line[1]] = line[7]
+            id_name_dict[line[2]] = line[8]
+            
+            if not line[1].isdigit() or not line[2].isdigit():
+                continue
 
-            if int(line[3]) not in id_map_int and int(line[4]) not in id_map_int:
+            if int(line[1]) not in id_map_int and int(line[1]) not in id_map_int:
                 ppi_graph.add_edge(i, i+1)
 
-                id_map[line[3]] = i
-                id_map_int[int(line[3])] = i
-                id_map_inv[i] = line[3]
-                id_map_inv_int[i] = int(line[3])
+                id_map[line[1]] = i
+                id_map_int[int(line[1])] = i
+                id_map_inv[i] = line[1]
+                id_map_inv_int[i] = int(line[1])
                 ppi_graph.nodes[i]['id'] = i
 
-                id_map[line[4]] = i+1
-                id_map_int[int(line[4])] = i+1
-                id_map_inv[i+1] = line[4]
-                id_map_inv_int[i+1] = int(line[4])
+                id_map[line[2]] = i+1
+                id_map_int[int(line[2])] = i+1
+                id_map_inv[i+1] = line[2]
+                id_map_inv_int[i+1] = int(line[2])
                 ppi_graph.nodes[i+1]['id'] = i+1
 
                 #print(i, i+1)
                 i += 2
 
-            elif int(line[3]) in id_map_int and int(line[4]) not in id_map_int:
+            elif int(line[1]) in id_map_int and int(line[2]) not in id_map_int:
 
-                ppi_graph.add_edge(id_map_int[int(line[3])], i)
+                ppi_graph.add_edge(id_map_int[int(line[2])], i)
 
-                id_map[line[4]] = i
-                id_map_int[int(line[4])] = i
-                id_map_inv[i] = line[4]
-                id_map_inv_int[i] = int(line[4])
+                id_map[line[2]] = i
+                id_map_int[int(line[2])] = i
+                id_map_inv[i] = line[2]
+                id_map_inv_int[i] = int(line[2])
 
                 ppi_graph.nodes[i]['id'] = i
-                #print(id_map_int[int(line[3])], i)
+                #print(id_map_int[int(line[1])], i)
 
                 i += 1
 
-            elif int(line[3]) not in id_map_int and int(line[4]) in id_map_int:
+            elif int(line[1]) not in id_map_int and int(line[2]) in id_map_int:
 
-                ppi_graph.add_edge(i, id_map_int[int(line[4])])
+                ppi_graph.add_edge(i, id_map_int[int(line[2])])
 
-                id_map[line[3]] = i
-                id_map_int[int(line[3])] = i
-                id_map_inv[i] = line[3]
-                id_map_inv_int[i] = int(line[3])
+                id_map[line[1]] = i
+                id_map_int[int(line[1])] = i
+                id_map_inv[i] = line[1]
+                id_map_inv_int[i] = int(line[1])
                 ppi_graph.nodes[i]['id'] = i
 
-                #print(i, id_map_int[int(line[4])])
+                #print(i, id_map_int[int(line[2])])
 
                 i += 1
 
             else:
                 ppi_graph.add_edge(
-                    id_map_int[int(line[3])], id_map_int[int(line[4])])
+                    id_map_int[int(line[1])], id_map_int[int(line[2])])
 
     np_adj_matrix = nx.to_numpy_matrix(ppi_graph)
     sp.sparse.save_npz('../grand_blend/{}_adj_matrix.npz'.format(organism),
@@ -140,18 +141,14 @@ def create_graph(organism):
     with open("{}_ppi_graph.txt".format(organism), "w+") as f:
         for e in ppi_graph.edges():
             a, b = e
-            f.write(str(id_map_inv_int[a]) + " " +
-                    str(id_map_inv_int[b]) + "\n")
+            f.write(str(id_map_inv_int[a]) + " " + str(id_map_inv_int[b]) + "\n")
 
     population = [0, 1, 2]
     weights = [0.8, 0.1, 0.1]
-    distribution_samples = choices(
-        population, weights, k=ppi_graph.number_of_nodes())
+    distribution_samples = choices(population, weights, k=ppi_graph.number_of_nodes())
 
-    print("Number of instances in training (0), test (1) and validation (2)\n",
-          Counter(distribution_samples), sep='\n')
-    print("Number of instances in training (0), test (1) and validation (2)\n", Counter(
-        distribution_samples), sep='\n', file=open("{}_distribution_samples.txt".format(organism), "w+"))
+    print("Number of instances in training (0), test (1) and validation (2)\n", Counter(distribution_samples), sep='\n')
+    print("Number of instances in training (0), test (1) and validation (2)\n", Counter(distribution_samples), sep='\n', file=open("{}_distribution_samples.txt".format(organism), "w+"))
 
     for i in range(ppi_graph.number_of_nodes()):
         if distribution_samples[i] == 0:
@@ -165,7 +162,7 @@ def create_graph(organism):
             ppi_graph.nodes[i]['val'] = True
 
         # print(i)
-        #print(ppi_graph.nodes[id_map_inv[i]]['test'], ppi_graph.nodes[id_map_inv[i]]['val'], sep="\t", end="\n")
+        # print(ppi_graph.nodes[id_map_inv[i]]['test'], ppi_graph.nodes[id_map_inv[i]]['val'], sep="\t", end="\n")
 
     print("Creating class-map")
     essential_dict = set()
@@ -208,12 +205,20 @@ def create_graph(organism):
         "../GraphSAGE/{}-id_map.json".format(organism), "w+"))
     json.dump(id_map, fp=open(
         "../GraphSAGE/{}-id_map_dummy.json".format(organism), "w+"))
+    json.dump(id_name_dict, fp=open(
+        "./{}-id_name_dict.json".format(organism), "w+"))
 
+def gene_expression(organism):
+    pass
+
+
+def subcellular_localization(organism):
+    pass
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--organism', type=str,
-                        help='Organism name : sc hs mm all')
+                        help='Organism name : sc hs all')
     args = parser.parse_args()
     opt = vars(args)
 
