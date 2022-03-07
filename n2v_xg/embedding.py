@@ -3,7 +3,7 @@ import sys
 import os
 import numpy as np
 
-full_name = {'sc': 'Saccharomyces_cerevisiae', 'mm': 'Mus_musculus', 'hs': 'Homo_sapiens'}
+full_name = {'sc': 'Saccharomyces_cerevisiae', 'hs': 'Homo_sapiens'}
 
 name = sys.argv[1]
 option = int(sys.argv[2])

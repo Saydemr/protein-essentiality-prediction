@@ -12,15 +12,12 @@ import argparse
 import os
 import fnmatch
 
-full_name = {'sc': 'Saccharomyces_cerevisiae', 'mm': 'Mus_musculus', 'hs': 'Homo_sapiens'}
+full_name = {'sc': 'Saccharomyces_cerevisiae', 'hs': 'Homo_sapiens'}
 
 
 def main(opt):
-    if not opt == 'all':
-        create_graph(opt['organism'])
-    else:
-        create_graph('sc')
-        create_graph('hs')
+    create_graph(opt['organism'])
+
 
 
 def create_graph(organism):
@@ -51,12 +48,13 @@ def create_graph(organism):
         for line in f:
             line = line.strip()
             line = line.split("\t")
-            if line[1] == line[2]:
-                continue
-
+            
             id_name_dict[line[1]] = line[7]
             id_name_dict[line[2]] = line[8]
             
+            if line[1] == line[2]:
+                continue
+
             if not line[1].isdigit() or not line[2].isdigit():
                 continue
 
@@ -218,7 +216,7 @@ def subcellular_localization(organism):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--organism', type=str,
-                        help='Organism name : sc hs all')
+                        help='Organism name : sc hs')
     args = parser.parse_args()
     opt = vars(args)
 

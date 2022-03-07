@@ -30,7 +30,7 @@ def most_recent_available(version_number):
 # Get the current version
 files = fnmatch.filter(os.listdir('./data'), 'BIOGRID-ORGANISM-4.4.*.tab3.zip')
 if len(files) == 0:
-    version_number = 204
+    version_number = 207
     FLAG = False
 else:
     version_number = int(files[0].split('.')[-3])
@@ -43,9 +43,9 @@ if most_recent > version_number:
     
     # Remove the old files if exist
     if FLAG:
-        files = fnmatch.filter(os.listdir('./data'), 'BIOGRID-ORGANISM-4.4.*.tab3*')
+        files = fnmatch.filter(os.listdir('./data'), 'BIOGRID-ORGANISM-*.tab3*')
         for file in files:
-            os.remove(file)
+            os.remove('./data/' + file)
 
     # Download the file
     url = "https://downloads.thebiogrid.org/Download/BioGRID/Release-Archive/BIOGRID-4.4." + \
@@ -58,7 +58,7 @@ if most_recent > version_number:
     # Unzip the file
     zf = ZipFile(
         './data/BIOGRID-ORGANISM-4.4.{}.tab3.zip'.format(most_recent), 'r')
-    filelist = [x for x in zf.filelist if 'Homo_sapiens' in x.filename or 'Mus_musculus' in x.filename or 'Saccharomyces_cerevisiae' in x.filename]
+    filelist = [x for x in zf.filelist if 'Homo_sapiens' in x.filename or 'Saccharomyces_cerevisiae' in x.filename]
     for file in filelist:
         zf.extract(file, './data')
 

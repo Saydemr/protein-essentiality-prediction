@@ -1,6 +1,6 @@
 # EPPuGNN
 
-This is the repository of a senior project titled "**E**ssential **P**rotein **P**rediction **u**sing **G**raph **N**eural **N**etworks". Relevant materials including code, data, documents etc. are all published to this repository.
+This is the repository of a senior project titled "**E**ssential **P**rotein **P**rediction **u**sing **G**raph **N**eural **N**etworks". Project investigates state-of-the-art Graph Neural Network models that fits to essentiality prediction. GNN models utilized are node2vec, GraphSAGE and BLEND. Other computational, topological etc. methods are provided to see the progress clearer. XGBoost is used as the classification algorithm. Use of several biological information sources to enhance the prediction is also analyzed. Relevant materials including code, data, documents etc. are all published to this repository.
 
 ## Project Information
 - Institution: [Ozyegin University](https://www.ozyegin.edu.tr/en)

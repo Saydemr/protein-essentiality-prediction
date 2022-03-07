@@ -4,6 +4,7 @@ import os
 import sklearn as sk
 import scipy as sp
 from scipy import sparse
+from params import params_dict
 
 
 nhi2gene = {}
@@ -12,7 +13,7 @@ with open('GPL90-17389.txt', 'r') as f:
         if line.startswith('#') or line.startswith('ID'):
             continue
         line = line.strip().split('\t')
-        nhi2gene[line[0]] = line[1]
+        nhi2gene[line[0]] = line[11]
 
 with open('GSE3431_series_matrix.txt', 'r') as f:
     with open('GSE3431_series_matrix_gene.txt', 'w+') as g:
@@ -29,15 +30,9 @@ with open('GSE3431_series_matrix.txt', 'r') as f:
                 g.write(nhi2gene[check] + '\t' + '\t'.join(line[1:]) + '\n')
 
 
-id_map = json.load(open('sc_eppugnn-id_map_inv.json'))
-id_bioname_dict = {}
+id_map          = json.load(open('sc-id_map_inv.json'))
+id_bioname_dict = json.load(open('sc-id_name_dict.json'))
 
-with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.204.tab3.txt') as f:
-    f.readline()
-    for line in f:
-        line = line.strip().split('\t')
-        id_bioname_dict[line[3]] = line[5]
-        id_bioname_dict[line[4]] = line[6]
 
 ge_matrix = np.zeros((len(id_map), 36))
 name_index = {id_bioname_dict[str(id_map[v])] : v  for v in id_map.keys() }
