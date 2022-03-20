@@ -11,7 +11,7 @@ import fnmatch
 import os
 from zipfile import ZipFile
 
-# Update BIOGrid data files
+# Update BioGRID data files
 BASE_URL_TEST = "https://downloads.thebiogrid.org/File/BioGRID/Release-Archive/BIOGRID-4.4.VERSION/BIOGRID-ORGANISM-4.4.VERSION.tab3.zip"
 FLAG = True
 
@@ -30,7 +30,7 @@ def most_recent_available(version_number):
 # Get the current version
 files = fnmatch.filter(os.listdir('./data'), 'BIOGRID-ORGANISM-4.4.*.tab3.zip')
 if len(files) == 0:
-    version_number = 207
+    version_number = 206
     FLAG = False
 else:
     version_number = int(files[0].split('.')[-3])
@@ -42,6 +42,7 @@ most_recent = most_recent_available(version_number)
 if most_recent > version_number:
     
     # Remove the old files if exist
+    print("Downloading the newest BİOGRID version")
     if FLAG:
         files = fnmatch.filter(os.listdir('./data'), 'BIOGRID-ORGANISM-*.tab3*')
         for file in files:
@@ -66,6 +67,7 @@ else:
     print("Most recent version")
 
 # Download gene expression data
+print("Downloading gene expression data")
 expression_human = requests.get('https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE86354&format=file&file=GSE86354_GTEx_FPKM.txt.gz', stream=True)
 with open('./data/GSE86354_GTEx_FPKM.txt.gz', 'wb') as f:
     f.write(expression_human.content)
@@ -94,6 +96,7 @@ with open('./data/GPL90-17389.txt', 'wb') as f:
 
 
 # Download the subcellular localization data
+print("Downloading subcellular localization data")
 subcellular_hs = requests.get('https://download.jensenlab.org/human_compartment_knowledge_full.tsv', stream=True)
 with open('./data/human_compartment_knowledge_full.tsv', 'wb') as f:
     f.write(subcellular_hs.content)
@@ -104,6 +107,7 @@ with open('./data/yeast_compartment_knowledge_full.tsv', 'wb') as f:
 
 
 # Download essential genes data
+print("Downloading essential genes data")
 essential_genes = requests.get('http://tubic.tju.edu.cn/deg/download/deg-e-15.2.zip', stream=True)
 with open('./data/deg-e-15.2.zip', 'wb') as f:
     f.write(essential_genes.content)
@@ -124,7 +128,6 @@ with open ('./data/degannotation-e.dat', 'r') as f:
 
 
 gene_num_listed = {}
-
 with open ('./data/degannotation-e.dat', 'r') as f:
     f.readline()
     for line in f:
@@ -137,6 +140,7 @@ with open ('./data/degannotation-e.dat', 'r') as f:
                 gene_num_listed[line[2]] = 1
 
 
+print("Preparing Homo Sapiens annotations...")
 with open ('./data/deg_hs.dat', 'w+') as g:
     for key in gene_num_listed:
         if gene_num_listed[key] > 4:
