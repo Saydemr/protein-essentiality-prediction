@@ -11,9 +11,7 @@ from scipy import sparse
 import argparse
 import os
 import fnmatch
-
-full_name = {'sc': 'Saccharomyces_cerevisiae', 'hs': 'Homo_sapiens'}
-
+from params import params_dict
 
 def main(opt):
     create_graph(opt['organism'])
@@ -24,7 +22,7 @@ def create_graph(organism):
     """
     Create a networkx graph from the BIOGRID data
     """
-    print("Organism: {}".format(full_name[organism].replace('_', ' ')))
+    print("Organism: {}".format((params_dict[organism]['full_name']).replace('_', ' ')))
     print("Loading graph...")
 
     ppi_graph = nx.Graph()
@@ -36,9 +34,9 @@ def create_graph(organism):
     id_name_dict = {}
 
     files = fnmatch.filter(os.listdir('./'),
-                           'BIOGRID-ORGANISM-{}*-4.4.*.tab3.txt'.format(full_name[organism]))
+                           'BIOGRID-ORGANISM-{}*-4.4.*.tab3.txt'.format(params_dict[organism]['full_name']))
     if len(files) == 0:
-        print("No data available for {}".format(full_name[organism]))
+        print("No data available for {}".format(params_dict[organism]['full_name']))
         print("Please run update.py in base directory")
         exit()
 
@@ -58,7 +56,7 @@ def create_graph(organism):
             if not line[1].isdigit() or not line[2].isdigit():
                 continue
 
-            if int(line[1]) not in id_map_int and int(line[1]) not in id_map_int:
+            if int(line[1]) not in id_map_int and int(line[2]) not in id_map_int:
                 ppi_graph.add_edge(i, i+1)
 
                 id_map[line[1]] = i
@@ -78,7 +76,7 @@ def create_graph(organism):
 
             elif int(line[1]) in id_map_int and int(line[2]) not in id_map_int:
 
-                ppi_graph.add_edge(id_map_int[int(line[2])], i)
+                ppi_graph.add_edge(id_map_int[int(line[1])], i)
 
                 id_map[line[2]] = i
                 id_map_int[int(line[2])] = i
@@ -167,7 +165,7 @@ def create_graph(organism):
     with open('deg_{}.dat'.format(organism)) as f:
         for line in f:
             line = line.strip().split('\t')
-            essential_dict.add(line[2])
+            essential_dict.add(line[0])
 
     class_map = {}
     # print(id_map)
@@ -180,6 +178,10 @@ def create_graph(organism):
             y_mat[my_key] = 1
         else:
             class_map[my_key] = 0
+
+    feat_mat = np.zeros((ppi_graph.number_of_nodes(), len(id_map)), dtype=np.float32)
+    sp.sparse.save_npz('../grand_blend/{}_feat_matrix.npz'.format(organism),
+                       sp.sparse.csr_matrix(feat_mat))
 
     np.save('../grand_blend/{}_y_mat.npy'.format(organism), y_mat)
     # print(class_map)
