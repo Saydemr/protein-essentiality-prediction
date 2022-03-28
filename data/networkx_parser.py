@@ -179,7 +179,7 @@ def create_graph(organism):
         else:
             class_map[my_key] = 0
 
-    feat_mat = np.zeros((ppi_graph.number_of_nodes(), len(id_map)), dtype=np.float32)
+    feat_mat = np.zeros((ppi_graph.number_of_nodes(), 2), dtype=np.float32)
     sp.sparse.save_npz('../grand_blend/{}_feat_matrix.npz'.format(organism),
                        sp.sparse.csr_matrix(feat_mat))
 
