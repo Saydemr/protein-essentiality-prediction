@@ -5,6 +5,8 @@
 *.gz
 *.dat
 *.tsv
+sc*.npz
+hs*.npz
 /n2v_xg/emb/
 /n2v_xg/csv*
 

@@ -169,7 +169,8 @@ def create_graph(organism):
 
     class_map = {}
     # print(id_map)
-    y_mat = np.zeros((ppi_graph.number_of_nodes(), 1), dtype=np.int8)
+    y_mat = np.zeros(ppi_graph.number_of_nodes(), dtype=np.int8)
+
     for i in id_map:
         my_key = id_map[i]
         my_str = id_name_dict[i]
