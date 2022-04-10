@@ -1,5 +1,3 @@
-from os import sep
-import string
 import networkx as nx
 from networkx.readwrite import json_graph
 from random import choices
@@ -7,15 +5,18 @@ from collections import Counter
 import json
 import numpy as np
 import scipy as sp
-from scipy import sparse
 import argparse
 import os
+from scipy import sparse
 import fnmatch
 from params import params_dict
 
+
+
+
+
 def main(opt):
     create_graph(opt['organism'])
-
 
 
 def create_graph(organism):
@@ -47,14 +48,14 @@ def create_graph(organism):
             line = line.strip()
             line = line.split("\t")
             
-            id_name_dict[line[1]] = line[7]
-            id_name_dict[line[2]] = line[8]
-            
             if line[1] == line[2]:
                 continue
 
             if not line[1].isdigit() or not line[2].isdigit():
                 continue
+
+            id_name_dict[line[1]] = line[7]
+            id_name_dict[line[2]] = line[8]
 
             if int(line[1]) not in id_map_int and int(line[2]) not in id_map_int:
                 ppi_graph.add_edge(i, i+1)
@@ -121,11 +122,11 @@ def create_graph(organism):
     print("Number of edges: ", ppi_graph.number_of_edges())
     print()
 
-    # These lines are not needed for the current dataset
-    for component in list(nx.connected_components(ppi_graph)):
-        if len(component) < 3:
-            for node in component:
-                ppi_graph.remove_node(node)
+    # # These lines are not needed for the current dataset
+    # for component in list(nx.connected_components(ppi_graph)):
+    #     if len(component) < 3:
+    #         for node in component:
+    #             ppi_graph.remove_node(node)
 
     print("Checking the graph if smth is modified.")
     print("Number of nodes: ", ppi_graph.number_of_nodes())
@@ -209,17 +210,124 @@ def create_graph(organism):
     json.dump(id_name_dict, fp=open(
         "./{}-id_name_dict.json".format(organism), "w+"))
 
+    gene_expression(organism)
+    subcellular_localization(organism)
+    go_annotation(organism)
+    rna_seq(organism)
+    merge_features(organism)
+
 def gene_expression(organism):
-    pass
+    id_bioname_dict = json.load(open("./{}-id_name_dict.json".format(organism)))
+    nhi2gene = {}
+    expression_file = params_dict[organism]['ge']
+    expression_size = 0
+
+    if organism == 'sc':
+        with open(params_dict[organism]['map'], 'r') as f:
+            for line in f:
+                if line.startswith('#') or line.startswith('ID'):
+                    continue
+                line = line.split('\t')
+
+                if "///" in line[10]:
+                    genes = line[10].strip().split("///")
+                    genes = [x.strip() for x in genes]
+                    if any(gene in id_bioname_dict for gene in genes):
+                        for gene in genes:
+                            if gene in id_bioname_dict:
+                                nhi2gene[line[0]] = gene
+                    else:
+                        nhi2gene[line[0]] = genes[0]    
+                else:
+                    nhi2gene[line[0]] = line[10]
+
+        with open(expression_file, 'r') as f:
+            with open(expression_file.replace(".txt", "_gene.txt"), 'w+') as g:
+                for line in f:
+                    line = line.rstrip()
+                    if line.startswith('!') or line.startswith('"ID_REF"'):
+                        continue
+                    line = line.split('\t')
+                    check = line[0].replace("\"","")
+
+                    if check in nhi2gene:
+                        if nhi2gene[check] == "":
+                            continue
+                        g.write(nhi2gene[check] + '\t' + '\t'.join(line[1:]) + '\n')
+                        expression_size = len(line) - 1
 
 
+    elif organism == 'hs':
+        with open(expression_file, 'r') as f:
+            with open(expression_file.replace(".txt", "_gene.txt"), 'w+') as g:
+                f.readline()
+                for line in f:
+                    line = line.rstrip()
+                    line = line.split('\t')
+                    
+                    if line[0] in id_bioname_dict.values():
+                        g.write(line[0] + '\t' + '\t'.join(line[1:]) + '\n')
+                        expression_size = len(line) - 1
+
+    ge_matrix  = np.zeros((len(id_bioname_dict), expression_size))
+    id_map     = json.load(open("./{}-id_map_inv.json".format(organism)))
+    name_index = {id_bioname_dict[str(id_map[v]).strip()] : v  for v in id_map.keys()}
+
+
+    with open(expression_file.replace(".txt", "_gene.txt"), 'r') as f:
+        for line in f:
+            line = line.strip().split('\t')
+            name = line[0]
+            ge_vector = line[1:]
+
+            if name not in name_index.keys():
+                continue
+
+            index = int(name_index[name])
+            ge_matrix[index] = ge_vector
+
+    np.save('{}-ge_feats.npy'.format(organism), ge_matrix)
+    
 def subcellular_localization(organism):
+    locations = ['Nucleus', 'Cytosol', 'Cytoskeleton', 'Peroxisome', 'Vacuole', 'Endoplasmic reticulum', 'Golgi apparatus', 'Plasma membrane', 'Endosome', 'Extracellular space', 'Mitochondrion'] 
+
+    id_map = json.load(open('{}-id_map_inv.json'.format(organism)))
+    id_bioname_dict = json.load(open("./{}-id_name_dict.json".format(organism)))
+    name_index = {id_bioname_dict[str(id_map[v])] : v  for v in id_map.keys()}
+
+
+    sl_matrix = np.zeros((len(id_map), 11), dtype=np.int64)
+    with open(params_dict[organism]['go'], 'r') as f:
+        for line in f:
+            line = line.strip().split('\t')
+            name = line[1]
+            sl_feature = line[3]
+            if name not in name_index.keys() or sl_feature not in locations:
+                continue
+            index = int(name_index[name])
+            sl_matrix[index, locations.index(sl_feature)] = 1
+
+
+    np.save('{}-sl_feats.npy'.format(organism), sl_matrix)
+
+def go_annotation(organism):
+    # TODO
     pass
+
+
+def rna_seq(organism):
+    # TODO
+    pass
+
+
+def merge_features(organism):
+    # TODO
+    pass
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--organism', type=str,
-                        help='Organism name : sc hs')
+    parser.add_argument('--organism', type=str, help='Organism name : sc hs')
     args = parser.parse_args()
     opt = vars(args)
 
