@@ -12,9 +12,6 @@ import fnmatch
 from params import params_dict
 
 
-
-
-
 def main(opt):
     create_graph(opt['organism'])
 
@@ -181,10 +178,7 @@ def create_graph(organism):
         else:
             class_map[my_key] = 0
 
-    feat_mat = np.zeros((ppi_graph.number_of_nodes(), 2), dtype=np.float32)
-    sp.sparse.save_npz('../grand_blend/{}_feat_matrix.npz'.format(organism),
-                       sp.sparse.csr_matrix(feat_mat))
-
+    
     np.save('../grand_blend/{}_y_mat.npy'.format(organism), y_mat)
     # print(class_map)
 
@@ -212,8 +206,8 @@ def create_graph(organism):
 
     gene_expression(organism)
     subcellular_localization(organism)
-    go_annotation(organism)
-    rna_seq(organism)
+    # go_annotation(organism)
+    # rna_seq(organism)
     merge_features(organism)
 
 def gene_expression(organism):
@@ -321,8 +315,14 @@ def rna_seq(organism):
 
 
 def merge_features(organism):
-    # TODO
-    pass
+    b = np.load('{}-ge_feats.npy'.format(organism), allow_pickle=True, fix_imports=True, encoding='latin1')
+    a = np.load('{}-sl_feats.npy'.format(organism), allow_pickle=True, fix_imports=True, encoding='latin1')
+
+    c = np.concatenate((a, b), axis=1)
+
+    print(c.shape)
+    np.save('{}-feats.npy'.format(organism), c)
+    sp.sparse.save_npz('../grand_blend/{}-feats.npz'.format(organism), sparse.csr_matrix(c))
 
 
 if __name__ == '__main__':
