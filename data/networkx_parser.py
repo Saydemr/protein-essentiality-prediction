@@ -287,10 +287,9 @@ def subcellular_localization(organism):
 
     id_map = json.load(open('{}-id_map_inv.json'.format(organism)))
     id_bioname_dict = json.load(open("./{}-id_name_dict.json".format(organism)))
-    name_index = {id_bioname_dict[str(id_map[v])] : v  for v in id_map.keys()}
+    name_index = {id_bioname_dict[str(id_map[v]).strip()] : v  for v in id_map.keys()}
 
-
-    sl_matrix = np.zeros((len(id_map), 11), dtype=np.int64)
+    sl_matrix = np.zeros((len(id_map), 11))
     with open(params_dict[organism]['go'], 'r') as f:
         for line in f:
             line = line.strip().split('\t')

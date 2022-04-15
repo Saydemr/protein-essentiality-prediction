@@ -1,9 +1,10 @@
+import imp
 import json
 import sys
 import os
 import numpy as np
+from ..data.params import params_dict
 
-full_name = {'sc': 'Saccharomyces_cerevisiae', 'hs': 'Homo_sapiens'}
 
 name = sys.argv[1]
 option = int(sys.argv[2])
@@ -16,7 +17,7 @@ essential_dict = set()
 with open('../data/deg_{}.dat'.format(organism)) as f:
     for line in f:
         line = line.strip().split('\t')
-        essential_dict.add(line[2])
+        essential_dict.add(line[0])
 
 location = name.split("/") 
 path_str = "/".join(location[:-2])
@@ -33,8 +34,8 @@ elif option == 4:
 path_str = path_str + location[-1]
 
 if os.path.isfile(name):
-    sl = np.load('sc_eppugnn_sl-feats.npy')
-    ge = np.load('sc_eppugnn_ge-feats.npy')
+    sl = np.load('{}-sl_feats.npy'.format(organism))
+    ge = np.load('{}-ge_feats.npy'.format(organism))
     with open(name) as emb:
         with open(path_str + '.csv', "w+") as out:
             with open(path_str +'_out.csv','w+') as ess_out:
