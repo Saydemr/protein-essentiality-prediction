@@ -2,7 +2,7 @@ import sys
 name = sys.argv[1]
 
 id_name_dict ={}
-with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.204.tab3.txt') as f:
+with open('../../data/BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.208.tab3.txt') as f:
     f.readline()
     for line in f:
         line = line.strip().split('\t')
@@ -11,11 +11,12 @@ with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.204.tab3.txt') as
         id_name_dict[line[3]] = line[7]
         id_name_dict[line[4]] = line[8]
 
+
 essential_dict = set()
-with open('deg_sc.dat') as f:
+with open('../../data/deg_sc.dat') as f:
     for line in f:
         line = line.strip().split('\t')
-        essential_dict.add(line[2])
+        essential_dict.add(line[0])
 
 with open (name) as emb:
     with open(name +'_out.csv','w+') as out:
