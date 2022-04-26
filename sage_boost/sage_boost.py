@@ -12,6 +12,7 @@ import sys
 def booster(x_name, y_name):
 # %%
     X = pd.read_csv(x_name) # feature array
+    X.drop(columns=X.columns[0], axis=1, inplace=True) # drop the Protein_ID column
     y = pd.read_csv(y_name) # target array
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, stratify=y)
