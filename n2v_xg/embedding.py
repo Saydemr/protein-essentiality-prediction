@@ -1,27 +1,25 @@
+import imp
+import json
 import sys
 import os
 import numpy as np
+from ..data.params import params_dict
+
 
 name = sys.argv[1]
 option = int(sys.argv[2])
+organism = sys.argv[3]
 
-id_name_dict ={}
-with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.204.tab3.txt') as f:
-    f.readline()
-    for line in f:
-        line = line.strip().split('\t')
-        if line[3] == line[4]:
-            continue
-        id_name_dict[line[3]] = line[7]
-        id_name_dict[line[4]] = line[8]
+id_name_dict = json.load('../data/{}-id_name_dict.json'.format(organism))
+
 
 essential_dict = set()
-with open('deg_sc.dat') as f:
+with open('../data/deg_{}.dat'.format(organism)) as f:
     for line in f:
         line = line.strip().split('\t')
-        essential_dict.add(line[2])
+        essential_dict.add(line[0])
 
-location = name.split("/")
+location = name.split("/") 
 path_str = "/".join(location[:-2])
 
 if option == 1:
@@ -36,8 +34,8 @@ elif option == 4:
 path_str = path_str + location[-1]
 
 if os.path.isfile(name):
-    sl = np.load('sc_eppugnn_sl-feats.npy')
-    ge = np.load('sc_eppugnn_ge-feats.npy')
+    sl = np.load('{}-sl_feats.npy'.format(organism))
+    ge = np.load('{}-ge_feats.npy'.format(organism))
     with open(name) as emb:
         with open(path_str + '.csv', "w+") as out:
             with open(path_str +'_out.csv','w+') as ess_out:

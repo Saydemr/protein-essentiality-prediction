@@ -1,18 +1,14 @@
-id_name_dict ={}
-with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.204.tab3.txt') as f:
-    f.readline()
-    for line in f:
-        line = line.strip().split('\t')
-        if line[3] == line[4]:
-            continue
-        id_name_dict[line[3]] = line[7]
-        id_name_dict[line[4]] = line[8]
+import sys
+import json
+
+organism = sys.argv[0]
+id_name_dict = json.load(open('../data/{}-id_name_dict.json'.format(organism)))
 
 essential_dict = set()
-with open('deg_sc.dat') as f:
+with open('deg_{}.dat'.format(organism)) as f:
     for line in f:
         line = line.strip().split('\t')
-        essential_dict.add(line[2])
+        essential_dict.add(line[0])
 
 
 class_map = {}
