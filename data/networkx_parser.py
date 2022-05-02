@@ -204,11 +204,13 @@ def create_graph(organism):
     json.dump(id_name_dict, fp=open(
         "./{}-id_name_dict.json".format(organism), "w+"))
 
+    print("Creating the feature matrix...")
     gene_expression(organism)
     subcellular_localization(organism)
-    # go_annotation(organism)
+    go_annotation(organism)
     # rna_seq(organism)
     merge_features(organism)
+
 
 def gene_expression(organism):
     id_bioname_dict = json.load(open("./{}-id_name_dict.json".format(organism)))
@@ -281,7 +283,8 @@ def gene_expression(organism):
             ge_matrix[index] = ge_vector
 
     np.save('{}-ge_feats.npy'.format(organism), ge_matrix)
-    
+
+
 def subcellular_localization(organism):
     locations = ['Nucleus', 'Cytosol', 'Cytoskeleton', 'Peroxisome', 'Vacuole', 'Endoplasmic reticulum', 'Golgi apparatus', 'Plasma membrane', 'Endosome', 'Extracellular space', 'Mitochondrion'] 
 
@@ -300,12 +303,38 @@ def subcellular_localization(organism):
             index = int(name_index[name])
             sl_matrix[index, locations.index(sl_feature)] = 1
 
-
     np.save('{}-sl_feats.npy'.format(organism), sl_matrix)
 
+
 def go_annotation(organism):
-    # TODO
-    pass
+    annotations = set()
+    with open(params_dict[organism]['go'], 'r') as f:
+        for line in f:
+            line = line.strip().split('\t')
+            annotations.add(line[2])
+
+    id_map = json.load(open('{}-id_map_inv.json'.format(organism)))
+    id_bioname_dict = json.load(open("./{}-id_name_dict.json".format(organism)))
+    name_index = {id_bioname_dict[str(id_map[v]).strip()] : v  for v in id_map.keys()}
+    annotations = list(annotations)
+    go_matrix = np.zeros((len(id_map), len(annotations)))
+
+    with open(params_dict[organism]['go'], 'r') as f:
+        for line in f:
+            line = line.strip().split('\t')
+            gene = line[1]
+            annotation = line[2]
+            if gene in id_bioname_dict.values():
+                go_matrix[int(name_index[gene]), annotations.index(annotation)] = 1
+
+    from sklearn.preprocessing import StandardScaler
+    go_matrix = StandardScaler().fit_transform(go_matrix)
+
+    from sklearn.decomposition import PCA
+    pca = PCA(n_components=params_dict[organism]['pca'])
+    go_matrix = pca.fit_transform(go_matrix)
+
+    np.save('{}-go_feats.npy'.format(organism), go_matrix)
 
 
 def rna_seq(organism):
@@ -316,12 +345,16 @@ def rna_seq(organism):
 def merge_features(organism):
     b = np.load('{}-ge_feats.npy'.format(organism), allow_pickle=True, fix_imports=True, encoding='latin1')
     a = np.load('{}-sl_feats.npy'.format(organism), allow_pickle=True, fix_imports=True, encoding='latin1')
+    d = np.load('{}-go_feats.npy'.format(organism), allow_pickle=True, fix_imports=True, encoding='latin1')
 
-    c = np.concatenate((a, b), axis=1)
+    c = np.concatenate((a, b, d), axis=1)
 
-    print(c.shape)
+    from sklearn.preprocessing import StandardScaler
+    c = StandardScaler().fit_transform(c)
+    
     np.save('{}-feats.npy'.format(organism), c)
     sp.sparse.save_npz('../grand_blend/{}-feats.npz'.format(organism), sparse.csr_matrix(c))
+    print(c.shape)
 
 
 if __name__ == '__main__':
