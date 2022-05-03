@@ -1,15 +1,17 @@
 import numpy as np
-from sklearn import decomposition as dc 
 import json
 import sys
 import os
+from ..data.params import params_dict
+
+
+filename = sys.argv[1]
+organism = sys.argv[2]
 
 locations = ['Nucleus', 'Cytosol', 'Cytoskeleton', 'Peroxisome', 'Vacuole', 'Endoplasmic reticulum', 'Golgi apparatus', 'Plasma membrane', 'Endosome', 'Extracellular space', 'Mitochondrion'] 
 
-if os.path.isfile('sc_eppugnn_sl-feats.npy'):
-    os.remove('sc_eppugnn_sl-feats.npy')
-
-filename = sys.argv[1]
+if os.path.isfile('{}-sl_feats.npy'.format(organism)):
+    os.remove('{}-sl_feats.npy'.format(organism))
 
 id_map_rev = {}
 with open(filename, 'r') as f:
@@ -20,21 +22,13 @@ with open(filename, 'r') as f:
         id_map_rev[int(line[0])] = i
         i += 1
 
-id_map = {v: k for k, v in id_map_rev.items()}
-id_name_dict ={}
+id_map       = {v: k for k, v in id_map_rev.items()}
+id_name_dict = json.load(open('../data/{}-id_name_dict.json'.format(organism)))
+name_index   = {id_name_dict[str(id_map[v]).strip()] : v  for v in id_map.keys() }
 
-with open('BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-4.4.204.tab3.txt') as f:
-    f.readline()
-    for line in f:
-        line = line.strip().split('\t')
-        id_name_dict[line[3]] = line[7]
-        id_name_dict[line[4]] = line[8]
+sl_matrix = np.zeros((len(id_map), 11))
 
-name_index = {id_name_dict[str(id_map[v])] : v  for v in id_map.keys() }
-
-sl_matrix = np.zeros((len(id_map), 11), dtype=np.int64)
-
-with open('yeast_compartment_knowledge_full.tsv', 'r') as f:
+with open(params_dict[organism]['go'], 'r') as f:
     for line in f:
         line = line.strip().split('\t')
         name = line[1]
@@ -44,4 +38,4 @@ with open('yeast_compartment_knowledge_full.tsv', 'r') as f:
         index = int(name_index[name])
         sl_matrix[index, locations.index(sl_feature)] = 1
 
-np.save('sc_eppugnn_sl-feats.npy', sl_matrix)
+np.save('{}-sl_feats.npy'.format(organism), sl_matrix)
