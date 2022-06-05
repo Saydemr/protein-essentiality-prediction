@@ -120,39 +120,42 @@ print("Downloading essential genes data")
 
 if not isfile('./data/degannotation-e.dat') or not isfile('./data/deg_sc.dat'):
     essential_genes = requests.get('http://tubic.tju.edu.cn/deg/download/deg-e-15.2.zip', stream=True)
-    with open('./data/deg-e-15.2.zip', 'wb') as f:
-        f.write(essential_genes.content)
+    print(essential_genes.status_code)
+    if essential_genes.status_code == 200:
+        with open('./data/deg-e-15.2.zip', 'wb') as f:
+            f.write(essential_genes.content)
 
 
-    with ZipFile('./data/deg-e-15.2.zip', 'r') as z:
-        z.extract('degannotation-e.dat', './data/')
+        with ZipFile('./data/deg-e-15.2.zip', 'r') as z:
+            z.extract('degannotation-e.dat', './data/')
 
-    with open ('./data/degannotation-e.dat', 'r') as f:
-        with open ('./data/deg_sc.dat', 'w+') as g:
-            f.readline()
-            for line in f:
-                line = line.strip()
-                line = line.split('\t')
-                if line[7] == 'Saccharomyces cerevisiae':
-                    g.write(line[2] + '\n')
+        with open ('./data/degannotation-e.dat', 'r') as f:
+            with open ('./data/deg_sc.dat', 'w+') as g:
+                f.readline()
+                for line in f:
+                    line = line.strip()
+                    line = line.split('\t')
+                    if line[7] == 'Saccharomyces cerevisiae':
+                        g.write(line[2] + '\n')
+
+        if not isfile('./data/deg_hs.dat'):
+            gene_num_listed = {}
+            with open ('./data/degannotation-e.dat', 'r') as f:
+                f.readline()
+                for line in f:
+                    line = line.strip()
+                    line = line.split('\t')
+                    if line[7] == 'Homo sapiens':
+                        if line[2] in gene_num_listed:
+                            gene_num_listed[line[2]] += 1
+                        else:
+                            gene_num_listed[line[2]] = 1
 
 
-if not isfile('./data/deg_hs.dat'):
-    gene_num_listed = {}
-    with open ('./data/degannotation-e.dat', 'r') as f:
-        f.readline()
-        for line in f:
-            line = line.strip()
-            line = line.split('\t')
-            if line[7] == 'Homo sapiens':
-                if line[2] in gene_num_listed:
-                    gene_num_listed[line[2]] += 1
-                else:
-                    gene_num_listed[line[2]] = 1
-
-
-    print("Preparing Homo Sapiens annotations...")
-    with open ('./data/deg_hs.dat', 'w+') as g:
-        for key in gene_num_listed:
-            if gene_num_listed[key] > 4:
-                g.write(key + '\n')
+            print("Preparing Homo Sapiens annotations...")
+            with open ('./data/deg_hs.dat', 'w+') as g:
+                for key in gene_num_listed:
+                    if gene_num_listed[key] > 4:
+                        g.write(key + '\n')
+    else:
+        print("Error downloading essential genes data. Server is down.")
