@@ -10,6 +10,8 @@ import os
 from scipy import sparse
 import fnmatch
 from params import params_dict
+import time
+timestr = time.strftime("%d.%m.%Y_%H:%M:%S_%z")
 
 
 def main(opt):
@@ -31,8 +33,7 @@ def create_graph(organism):
     id_map_inv_int = {}
     id_name_dict = {}
 
-    files = fnmatch.filter(os.listdir('./'),
-                           'BIOGRID-ORGANISM-{}*-4.4.*.tab3.txt'.format(params_dict[organism]['full_name']))
+    files = fnmatch.filter(os.listdir('./'), 'BIOGRID-ORGANISM-{}*-4.4.*.tab3.txt'.format(params_dict[organism]['full_name']))
     if len(files) == 0:
         print("No data available for {}".format(params_dict[organism]['full_name']))
         print("Please run update.py in base directory")
@@ -105,8 +106,7 @@ def create_graph(organism):
                     id_map_int[int(line[1])], id_map_int[int(line[2])])
 
     np_adj_matrix = nx.to_numpy_matrix(ppi_graph)
-    sp.sparse.save_npz('../grand_blend/{}_adj_matrix.npz'.format(organism),
-                       sp.sparse.csr_matrix(np_adj_matrix))
+    sp.sparse.save_npz('../grand_blend/{}_adj_matrix.npz'.format(organism), sp.sparse.csr_matrix(np_adj_matrix))
 
     # 0 : training = train_removed false : test_removed true
     # 1 : test     = train_removed true  : test_removed false
@@ -114,8 +114,7 @@ def create_graph(organism):
 
     print("Graph info...")
     print("Number of nodes: ", ppi_graph.number_of_nodes())
-    print("Number of connected components",
-          nx.number_connected_components(ppi_graph))
+    print("Number of connected components", nx.number_connected_components(ppi_graph))
     print("Number of edges: ", ppi_graph.number_of_edges())
     print()
 
@@ -127,8 +126,7 @@ def create_graph(organism):
 
     print("Checking the graph if smth is modified.")
     print("Number of nodes: ", ppi_graph.number_of_nodes())
-    print("Number of connected components",
-          nx.number_connected_components(ppi_graph))
+    print("Number of connected components", nx.number_connected_components(ppi_graph))
     print("Number of edges: ", ppi_graph.number_of_edges())
     print()
 
@@ -204,6 +202,17 @@ def create_graph(organism):
     json.dump(id_name_dict, fp=open(
         "./{}-id_name_dict.json".format(organism), "w+"))
 
+    print("Logging some numbers...")
+    with open("{}_{}_log.txt".format(organism,timestr), "w+") as f:
+        f.write("Number of nodes: {}\n".format(ppi_graph.number_of_nodes()))
+        f.write("Number of edges: {}\n".format(ppi_graph.number_of_edges()))
+        f.write("Number of connected components: {}\n".format(nx.number_connected_components(ppi_graph)))
+        f.write("Number of instances in training (0), test (1) and validation (2)\n")
+        f.write(str(Counter(distribution_samples)) + "\n")
+        f.flush()
+        f.close()
+
+
     print("Creating the feature matrix...")
     gene_expression(organism)
     subcellular_localization(organism)
@@ -212,12 +221,15 @@ def create_graph(organism):
     merge_features(organism)
 
 
+        
+
 def gene_expression(organism):
     id_bioname_dict = json.load(open("./{}-id_name_dict.json".format(organism)))
     nhi2gene = {}
     expression_file = params_dict[organism]['ge']
     expression_size = 0
 
+    non_zero_count = 0
     if organism == 'sc':
         with open(params_dict[organism]['map'], 'r') as f:
             for line in f:
@@ -265,7 +277,7 @@ def gene_expression(organism):
                         g.write(line[0] + '\t' + '\t'.join(line[1:]) + '\n')
                         expression_size = len(line) - 1
 
-    ge_matrix  = np.zeros((len(id_bioname_dict), expression_size))
+    ge_matrix  = np.zeros((len(id_bioname_dict), expression_size), dtype=np.float32)
     id_map     = json.load(open("./{}-id_map_inv.json".format(organism)))
     name_index = {id_bioname_dict[str(id_map[v]).strip()] : v  for v in id_map.keys()}
 
@@ -281,7 +293,13 @@ def gene_expression(organism):
 
             index = int(name_index[name])
             ge_matrix[index] = ge_vector
+            non_zero_count += 1
 
+    with open("{}_{}_log.txt".format(organism,timestr), "a+") as f:
+        f.write("Number of genes that has gene expressions matrix: {}\n".format(non_zero_count))
+        f.flush()
+        f.close()
+    
     np.save('{}-ge_feats.npy'.format(organism), ge_matrix)
 
 
@@ -292,7 +310,7 @@ def subcellular_localization(organism):
     id_bioname_dict = json.load(open("./{}-id_name_dict.json".format(organism)))
     name_index = {id_bioname_dict[str(id_map[v]).strip()] : v  for v in id_map.keys()}
 
-    sl_matrix = np.zeros((len(id_map), 11))
+    sl_matrix = np.zeros((len(id_map), 11), dtype=np.int32)
     with open(params_dict[organism]['go'], 'r') as f:
         for line in f:
             line = line.strip().split('\t')
@@ -302,6 +320,16 @@ def subcellular_localization(organism):
                 continue
             index = int(name_index[name])
             sl_matrix[index, locations.index(sl_feature)] = 1
+
+    sl_non_zero_count = 0
+    for line in sl_matrix:
+        if sum(line) != 0:
+            sl_non_zero_count += 1
+    
+    with open("{}_{}_log.txt".format(organism,timestr), "a+") as f:
+        f.write("Number of genes that has subcellular localization vector: {}\n".format(sl_non_zero_count))
+        f.flush()
+        f.close()
 
     np.save('{}-sl_feats.npy'.format(organism), sl_matrix)
 
@@ -317,7 +345,7 @@ def go_annotation(organism):
     id_bioname_dict = json.load(open("./{}-id_name_dict.json".format(organism)))
     name_index = {id_bioname_dict[str(id_map[v]).strip()] : v  for v in id_map.keys()}
     annotations = list(annotations)
-    go_matrix = np.zeros((len(id_map), len(annotations)))
+    go_matrix = np.zeros((len(id_map), len(annotations)), dtype=np.int32)
 
     with open(params_dict[organism]['go'], 'r') as f:
         for line in f:
@@ -326,6 +354,16 @@ def go_annotation(organism):
             annotation = line[2]
             if gene in id_bioname_dict.values():
                 go_matrix[int(name_index[gene]), annotations.index(annotation)] = 1
+
+    go_non_zero_count = 0
+    for line in go_matrix:
+        if sum(line) != 0:
+            go_non_zero_count += 1
+    
+    with open("{}_{}_log.txt".format(organism,timestr), "a+") as f:
+        f.write("Number of genes that has go annotation vector: {}\n".format(go_non_zero_count))
+        f.flush()
+        f.close()
 
     from sklearn.preprocessing import StandardScaler
     go_matrix = StandardScaler().fit_transform(go_matrix)
@@ -354,7 +392,11 @@ def merge_features(organism):
     
     np.save('{}-feats.npy'.format(organism), c)
     sp.sparse.save_npz('../grand_blend/{}-feats.npz'.format(organism), sparse.csr_matrix(c))
-    print(c.shape)
+
+    with open("{}_{}_log.txt".format(organism,timestr), "a+") as f:
+        f.write("Shape of the feature matrix: {}\n".format(c.shape))
+        f.flush()
+        f.close()
 
 
 if __name__ == '__main__':
