@@ -11,7 +11,7 @@ This is the repository of a senior project titled "**E**ssential **P**rotein **P
 ```
 git clone --depth 1 https://github.com/Saydemr/EPPuGNN.git
 ```
-### Call update.py to download requirements and latest biological data
+### Download requirements and latest biological data
 ```
 python update.py
 ```

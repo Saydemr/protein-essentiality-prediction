@@ -108,9 +108,7 @@ def create_graph(organism):
     np_adj_matrix = nx.to_numpy_matrix(ppi_graph)
     sp.sparse.save_npz('../grand_blend/{}_adj_matrix.npz'.format(organism), sp.sparse.csr_matrix(np_adj_matrix))
 
-    # 0 : training = train_removed false : test_removed true
-    # 1 : test     = train_removed true  : test_removed false
-    # 2 : validation = true true
+
 
     print("Graph info...")
     print("Number of nodes: ", ppi_graph.number_of_nodes())
@@ -135,23 +133,8 @@ def create_graph(organism):
             a, b = e
             f.write(str(id_map_inv_int[a]) + " " + str(id_map_inv_int[b]) + "\n")
 
-    population = [0, 1, 2]
-    weights = [0.8, 0.1, 0.1]
-    distribution_samples = choices(population, weights, k=ppi_graph.number_of_nodes())
 
-    print("Number of instances in training (0), test (1) and validation (2)\n", Counter(distribution_samples), sep='\n')
-    print("Number of instances in training (0), test (1) and validation (2)\n", Counter(distribution_samples), sep='\n', file=open("{}_distribution_samples.txt".format(organism), "w+"))
 
-    for i in range(ppi_graph.number_of_nodes()):
-        if distribution_samples[i] == 0:
-            ppi_graph.nodes[i]['test'] = False
-            ppi_graph.nodes[i]['val'] = False
-        elif distribution_samples[i] == 1:
-            ppi_graph.nodes[i]['test'] = True
-            ppi_graph.nodes[i]['val'] = False
-        else:
-            ppi_graph.nodes[i]['test'] = False
-            ppi_graph.nodes[i]['val'] = True
 
         # print(i)
         # print(ppi_graph.nodes[id_map_inv[i]]['test'], ppi_graph.nodes[id_map_inv[i]]['val'], sep="\t", end="\n")
@@ -164,21 +147,49 @@ def create_graph(organism):
             essential_dict.add(line[0])
 
     class_map = {}
-    # print(id_map)
     y_mat = np.zeros(ppi_graph.number_of_nodes(), dtype=np.int8)
 
+    essential_count = 0
     for i in id_map:
         my_key = id_map[i]
         my_str = id_name_dict[i]
         if my_str in essential_dict:
             class_map[my_key] = 1
             y_mat[my_key] = 1
+            essential_count += 1
         else:
             class_map[my_key] = 0
 
+
+    population = [0, 1, 2]
+    weights = [0.8, 0.1, 0.1]
+    distribution_samples = choices(population, weights, k=ppi_graph.number_of_nodes())
     
+    essential_train_count = 0
+    essential_test_count  = 0
+    essential_val_count = 0
+
+    for i in range(ppi_graph.number_of_nodes()):
+        if distribution_samples[i] == 0:
+            ppi_graph.nodes[i]['test'] = False
+            ppi_graph.nodes[i]['val'] = False
+            if class_map[i] == 1:
+                essential_train_count += 1
+
+        elif distribution_samples[i] == 1:
+            ppi_graph.nodes[i]['test'] = True
+            ppi_graph.nodes[i]['val'] = False
+            if class_map[i] == 1:
+                essential_test_count += 1
+        else:
+            ppi_graph.nodes[i]['test'] = False
+            ppi_graph.nodes[i]['val'] = True
+            if class_map[i] == 1:
+                essential_val_count += 1
+
+
+
     np.save('../grand_blend/{}_y_mat.npy'.format(organism), y_mat)
-    # print(class_map)
 
     print('Creating id-map')
     sage_id_map = {}
@@ -207,6 +218,10 @@ def create_graph(organism):
         f.write("Number of nodes: {}\n".format(ppi_graph.number_of_nodes()))
         f.write("Number of edges: {}\n".format(ppi_graph.number_of_edges()))
         f.write("Number of connected components: {}\n".format(nx.number_connected_components(ppi_graph)))
+        f.write("Number of essential genes: {}\n".format(essential_count))
+        f.write("Number of essential genes in training set (GraphSAGE): {}\n".format(essential_train_count))
+        f.write("Number of essential genes in validation set (GraphSAGE): {}\n".format(essential_val_count))
+        f.write("Number of essential genes in test set (GraphSAGE): {}\n".format(essential_test_count))
         f.write("Number of instances in training (0), test (1) and validation (2)\n")
         f.write(str(Counter(distribution_samples)) + "\n")
         f.flush()
@@ -401,7 +416,7 @@ def merge_features(organism):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--organism', type=str, help='Organism name : sc hs')
+    parser.add_argument('--organism', type=str, help='Organism name : sc hs', default='sc')
     args = parser.parse_args()
     opt = vars(args)
 
