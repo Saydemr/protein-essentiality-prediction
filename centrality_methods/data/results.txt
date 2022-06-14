@@ -1,0 +1,6 @@
+# centrality_method num_essential_proteins percentage
+data/betweenness_centrality_ess.csv,403,36.306306306306304
+data/closeness_centrality_ess.csv,433,39.00900900900901
+data/degree_centrality_ess.csv,437,39.369369369369366
+data/eigenvector_centrality_ess.csv,458,41.26126126126126
+data/information_centrality_ess.csv,438,39.45945945945946
