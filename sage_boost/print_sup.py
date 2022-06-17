@@ -5,7 +5,7 @@ models = ['gcn', 'graphsage_maxpool', 'graphsage_mean', 'graphsage_meanpool', 'g
 with open('./log/logs_last_sup.csv', 'w+') as log_csv:
     log_csv.write('Model,Class,F1_Micro,F1_Macro,Loss,TestorVal\n')
     for model in models:
-        for i in range(1,8):
+        for i in range(5):
             val_txt  = './runs/' + str(i) + '/sup-example_data/' + model + '_small_0.0100/val_stats.txt'
             test_txt = './runs/' + str(i) + '/sup-example_data/' + model + '_small_0.0100/test_stats.txt'
 
