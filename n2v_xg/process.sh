@@ -38,12 +38,11 @@ do
                         FILE="${PWD}/emb/${organism}_ppi_emb_d${dim}_e${epochs}_l${length}_w${walk}_k${cont}_p${retpar}.emb"
                         if [ -f $FILE ]; then
                             echo "$FILE exists"
-                            python3 remix.py $FILE $organism &
-                            wait
-                            for option in 1 2
+                            python3 reorder.py $FILE $organism
+                            for option in 0 1 2 3 4
                             do
                                 python3 embedding.py ${FILE} ${option} ${organism}
-                                log_file="log/${organism}_last${option}.csv"
+                                log_file="log/${organism}_results_${option}.csv"
                                 echo -n "${dim},${epochs},${length},${walk},${cont},${retpar}," >> $log_file
                                 
                                 emb_filename="csv_imp/${organism}_ppi_emb_d${dim}_e${epochs}_l${length}_w${walk}_k${cont}_p${retpar}.emb.csv"

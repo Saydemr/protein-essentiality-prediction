@@ -13,11 +13,6 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.metrics import plot_confusion_matrix
 import sys
 
-# X = read_csv('./csv_imp/sc_ppi_emb_d64_e3_l120_w20_k20_p2.emb.csv')
-
-# print(X.head())
-
-# exit()
 def booster(x_name, y_name):
 
     X = pd.read_csv(x_name) # feature array

@@ -21,8 +21,20 @@ with open('../data/deg_{}.dat'.format(organism)) as f:
 
 location = name.split("/") 
 path_str = "/".join(location[:-2])
-path_str = path_str + "/csv_imp/"
+
+if option == 0:
+    path_str = path_str + "/csv_imp/"
+elif option == 1:
+    path_str = path_str + "/csv_imp_sl/"
+elif option == 2:
+    path_str = path_str + "/csv_imp_ge/"
+elif option == 3:
+    path_str = path_str + "/csv_imp_sl_ge/"
+elif option == 4:
+    path_str = path_str + "/csv_imp_sl_ge_go/"
+
 path_str = path_str + location[-1]
+
 
 if os.path.isfile(name):
     sl = np.load('{}-sl_feats.npy'.format(organism))
@@ -38,28 +50,46 @@ if os.path.isfile(name):
                 for line in emb:
                     line = line.strip().split(' ')
                     if first_line:
-                        out.write("Protein_ID,")
+                        out.write("Protein_ID")
                         for i in range(1,len(line)):
-                            out.write("Emb_" + str(i) + ',')
-                        for i in range(sl.shape[1]):
-                            out.write("SL_" + str(i) + ',')
-                        for i in range(ge.shape[1]):
-                            out.write("GE_" + str(i) + ',')
-                        for i in range(go.shape[1]-1):
-                            out.write("GO_" + str(i) + ',')
-                        out.write("GO_" + str(go.shape[1]-1) + '\n')
+                            out.write(",Emb_" + str(i))
+                        if option == 0:
+                            pass
+                        elif option == 1:
+                            for i in range(sl.shape[1]):
+                                out.write(",SL_" + str(i))
+                        elif option == 2:
+                            for i in range(ge.shape[1]):
+                                out.write(",GE_" + str(i))
+                        elif option == 3:
+                            for i in range(go.shape[1]):
+                                out.write(",GO_" + str(i))
+                        elif option == 4:
+                            for i in range(sl.shape[1]):
+                                out.write(",SL_" + str(i))
+                            for i in range(ge.shape[1]):
+                                out.write(",GE_" + str(i))
+                            for i in range(go.shape[1]):
+                                out.write(",GO_" + str(i))   
+                        out.write('\n')
                         first_line = False
                     
-                    out.write(','.join(line) + ',')
-                    for i in sl[miter]:
-                        out.write(str(i) + ',')
-                    for i in ge[miter]:
-                        out.write(str(i) + ',')
-                    for i in range(len(go[miter])-1):
-                        out.write(str(go[miter][i]) + ',')
-                    out.write(str(go[miter][-1]) + '\n')
+                    out.write(','.join(line))
+                    if option == 0:
+                        out.write('\n')
+                    elif option == 1:
+                        out.write(',' + ','.join(map(str,sl[miter])) + '\n')
+                    elif option == 2:
+                        out.write(',' + ','.join(map(str,ge[miter])) + '\n')
+                    elif option == 3:
+                        out.write(',' + ','.join(map(str,go[miter])) + '\n')
+                    elif option == 4:
+                        out.write(',' + ','.join(map(str,sl[miter])))
+                        out.write(',' + ','.join(map(str,ge[miter])))
+                        out.write(',' + ','.join(map(str,go[miter])) + '\n')
+                    
                 
-                    if id_name_dict[line[0]] in essential_dict:
+                    if id_name_dict[line[0].strip()] in essential_dict:
                         ess_out.write('1\n')
                     else:
                         ess_out.write('0\n')
