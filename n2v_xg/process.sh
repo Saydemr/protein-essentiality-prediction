@@ -1,26 +1,4 @@
 organism="$1"
-
-# for dim in 32
-# do
-#     for epochs in 1
-#     do
-#         for length in 120
-#         do
-#             for walk in 20
-#             do
-#                 for cont in 10
-#                 do
-#                     for retpar in 1
-#                     do
-#                         ./node2vec -i:../data/${organism}_ppi_graph.txt -o:emb/${organism}_ppi_emb_d${dim}_e${epochs}_l${length}_w${walk}_k${cont}_p${retpar}.emb -d:${dim} -e:${epochs} -l:${length} -r:${walk} -k:${cont} -p:${retpar}
-#                     done
-#                 done
-#             done
-#         done
-#     done
-# done
-
-
 echo "Dimension,Epochs,Length_of_Walk,Num_Walks,Context_Size,Return_Hyperparam,Accuracy,Balanced_Accuracy,F1_Score,Matthews_Corrcoef,Roc_Auc,Precision,Recall" > log/${organism}_results.csv
 
 for dim in 32
