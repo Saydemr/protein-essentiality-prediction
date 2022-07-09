@@ -30,7 +30,6 @@ def most_recent_available(version_number):
 
 # Get the current version
 files = fnmatch.filter(os.listdir('./data'), 'BIOGRID-ORGANISM-4.4.*.tab3.zip')
-print(len(files), files)
 if len(files) == 0:
     version_number = 206
     FLAG = False
@@ -47,7 +46,6 @@ if most_recent > version_number:
     print("Downloading the newest BioGRID version")
     if FLAG:
         files = fnmatch.filter(os.listdir('./data'), 'BIOGRID-ORGANISM-*.tab3*')
-        print(files)
         for file in files:
             os.remove('./data/' + file)
 
@@ -115,12 +113,10 @@ if not isfile('./data/yeast_compartment_knowledge_full.tsv'):
         f.write(subcellular_sc.content)
 
 
-# Download essential genes data
-print("Downloading essential genes data")
 
-if not isfile('./data/degannotation-e.dat') or not isfile('./data/deg_sc.dat'):
+if not isfile('./data/degannotation-e.dat'):
+    print("Downloading essential genes data")
     essential_genes = requests.get('http://tubic.tju.edu.cn/deg/download/deg-e-15.2.zip', stream=True)
-    print(essential_genes.status_code)
     if essential_genes.status_code == 200:
         with open('./data/deg-e-15.2.zip', 'wb') as f:
             f.write(essential_genes.content)
@@ -128,34 +124,37 @@ if not isfile('./data/degannotation-e.dat') or not isfile('./data/deg_sc.dat'):
 
         with ZipFile('./data/deg-e-15.2.zip', 'r') as z:
             z.extract('degannotation-e.dat', './data/')
-
-        with open ('./data/degannotation-e.dat', 'r') as f:
-            with open ('./data/deg_sc.dat', 'w+') as g:
-                f.readline()
-                for line in f:
-                    line = line.strip()
-                    line = line.split('\t')
-                    if line[7] == 'Saccharomyces cerevisiae':
-                        g.write(line[2] + '\n')
-
-        if not isfile('./data/deg_hs.dat'):
-            gene_num_listed = {}
-            with open ('./data/degannotation-e.dat', 'r') as f:
-                f.readline()
-                for line in f:
-                    line = line.strip()
-                    line = line.split('\t')
-                    if line[7] == 'Homo sapiens':
-                        if line[2] in gene_num_listed:
-                            gene_num_listed[line[2]] += 1
-                        else:
-                            gene_num_listed[line[2]] = 1
-
-
-            print("Preparing Homo Sapiens annotations...")
-            with open ('./data/deg_hs.dat', 'w+') as g:
-                for key in gene_num_listed:
-                    if gene_num_listed[key] > 4:
-                        g.write(key + '\n')
     else:
         print("Error downloading essential genes data. Server is down.")
+
+else:
+    if not isfile('./data/deg_sc.dat'):
+        with open ('./data/degannotation-e.dat', 'r') as f:
+            with open ('./data/deg_sc.dat', 'w+', encoding='UTF8') as g:
+                f.readline()
+                for line in f:
+                    line = line.strip()
+                    line = line.split('\t')
+
+                    if line[7] == 'Saccharomyces cerevisiae':
+                        g.write(line[2] + '\n')
+                
+    if not isfile('./data/deg_hs.dat'):
+        gene_num_listed = {}
+        with open ('./data/degannotation-e.dat', 'r', encoding='UTF8') as f:
+            f.readline()
+            for line in f:
+                line = line.strip()
+                line = line.split('\t')
+                if line[7] == 'Homo sapiens':
+                    if line[2] in gene_num_listed:
+                        gene_num_listed[line[2]] += 1
+                    else:
+                        gene_num_listed[line[2]] = 1
+
+
+        print("Preparing Homo Sapiens annotations...")
+        with open ('./data/deg_hs.dat', 'w+') as g:
+            for key in gene_num_listed:
+                if gene_num_listed[key] > 4:
+                    g.write(key + '\n')
