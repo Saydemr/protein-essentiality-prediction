@@ -5,7 +5,7 @@ StringVal="gcn graphsage_maxpool graphsage_mean graphsage_meanpool graphsage_seq
 
 for model in $StringVal
 do
-    for i in 1 2 3 4 5 6 7
+    for i in 0 1 2 3 4
     do
         emb_filename="./runs/sc_${i}_/unsup-example_data/${model}_small_0.000010/emb.csv"
         es_filename="./runs/sc_${i}_/unsup-example_data/${model}_small_0.000010/emb_out.csv"

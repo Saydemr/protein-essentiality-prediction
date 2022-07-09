@@ -70,7 +70,6 @@ def create_graph(organism):
                 id_map_inv_int[i+1] = int(line[2])
                 ppi_graph.nodes[i+1]['id'] = i+1
 
-                #print(i, i+1)
                 i += 2
 
             elif int(line[1]) in id_map_int and int(line[2]) not in id_map_int:
@@ -83,7 +82,6 @@ def create_graph(organism):
                 id_map_inv_int[i] = int(line[2])
 
                 ppi_graph.nodes[i]['id'] = i
-                #print(id_map_int[int(line[1])], i)
 
                 i += 1
 
@@ -97,17 +95,11 @@ def create_graph(organism):
                 id_map_inv_int[i] = int(line[1])
                 ppi_graph.nodes[i]['id'] = i
 
-                #print(i, id_map_int[int(line[2])])
-
                 i += 1
 
             else:
                 ppi_graph.add_edge(
                     id_map_int[int(line[1])], id_map_int[int(line[2])])
-
-    np_adj_matrix = nx.to_numpy_matrix(ppi_graph)
-    sp.sparse.save_npz('../grand_blend/{}_adj_matrix.npz'.format(organism), sp.sparse.csr_matrix(np_adj_matrix))
-
 
 
     print("Graph info...")
@@ -116,28 +108,30 @@ def create_graph(organism):
     print("Number of edges: ", ppi_graph.number_of_edges())
     print()
 
-    # # These lines are not needed for the current dataset
-    # for component in list(nx.connected_components(ppi_graph)):
-    #     if len(component) < 3:
-    #         for node in component:
-    #             ppi_graph.remove_node(node)
-
+    for component in list(nx.connected_components(ppi_graph)):
+        if len(component) < 10:
+            for node in component:
+                ppi_graph.remove_node(node)
+            
+                a = id_map_inv.pop(node)
+                b = id_map_inv_int.pop(node)
+                c = id_map.pop(a)
+                d = id_map_int.pop(b)
+                id_name_dict.pop(str(a))
+            
     print("Checking the graph if smth is modified.")
     print("Number of nodes: ", ppi_graph.number_of_nodes())
     print("Number of connected components", nx.number_connected_components(ppi_graph))
     print("Number of edges: ", ppi_graph.number_of_edges())
     print()
 
+    np_adj_matrix = nx.to_numpy_matrix(ppi_graph)
+    sp.sparse.save_npz('../grand_blend/{}_adj_matrix.npz'.format(organism), sp.sparse.csr_matrix(np_adj_matrix))
+
     with open("{}_ppi_graph.txt".format(organism), "w+") as f:
         for e in ppi_graph.edges():
             a, b = e
             f.write(str(id_map_inv_int[a]) + " " + str(id_map_inv_int[b]) + "\n")
-
-
-
-
-        # print(i)
-        # print(ppi_graph.nodes[id_map_inv[i]]['test'], ppi_graph.nodes[id_map_inv[i]]['val'], sep="\t", end="\n")
 
     print("Creating class-map")
     essential_dict = set()
@@ -169,22 +163,22 @@ def create_graph(organism):
     essential_test_count  = 0
     essential_val_count = 0
 
-    for i in range(ppi_graph.number_of_nodes()):
+    for i, node in enumerate(ppi_graph.nodes):
         if distribution_samples[i] == 0:
-            ppi_graph.nodes[i]['test'] = False
-            ppi_graph.nodes[i]['val'] = False
-            if class_map[i] == 1:
+            ppi_graph.nodes[node]['test'] = False
+            ppi_graph.nodes[node]['val'] = False
+            if class_map[node] == 1:
                 essential_train_count += 1
 
         elif distribution_samples[i] == 1:
-            ppi_graph.nodes[i]['test'] = True
-            ppi_graph.nodes[i]['val'] = False
-            if class_map[i] == 1:
+            ppi_graph.nodes[node]['test'] = True
+            ppi_graph.nodes[node]['val'] = False
+            if class_map[node] == 1:
                 essential_test_count += 1
         else:
-            ppi_graph.nodes[i]['test'] = False
-            ppi_graph.nodes[i]['val'] = True
-            if class_map[i] == 1:
+            ppi_graph.nodes[node]['test'] = False
+            ppi_graph.nodes[node]['val'] = True
+            if class_map[node] == 1:
                 essential_val_count += 1
 
 
@@ -193,8 +187,8 @@ def create_graph(organism):
 
     print('Creating id-map')
     sage_id_map = {}
-    for i in range(ppi_graph.number_of_nodes()):
-        sage_id_map[str(i)] = i
+    for index, node in enumerate(ppi_graph.nodes):
+        sage_id_map[node] = int(index)
 
     print("Writing graphs to JSON files...")
 
@@ -202,16 +196,24 @@ def create_graph(organism):
         "../GraphSAGE/{}-class_map.json".format(organism), "w+"))
     json.dump(json_graph.node_link_data(ppi_graph),
               fp=open("../GraphSAGE/{}-G.json".format(organism), "w+"))
-    json.dump({str(v): int(k) for k, v in id_map.items()},
+    json.dump(id_map_inv,
               fp=open("../GraphSAGE/{}-id_map_inv.json".format(organism), "w+"))
-    json.dump({str(v): int(k) for k, v in id_map.items()},
+    json.dump(id_map_inv,
               fp=open("./{}-id_map_inv.json".format(organism), "w+"))
     json.dump(sage_id_map, fp=open(
         "../GraphSAGE/{}-id_map.json".format(organism), "w+"))
+    json.dump(sage_id_map, fp=open(
+        "./{}-id_map.json".format(organism), "w+"))
     json.dump(id_map, fp=open(
         "../GraphSAGE/{}-id_map_dummy.json".format(organism), "w+"))
     json.dump(id_name_dict, fp=open(
         "./{}-id_name_dict.json".format(organism), "w+"))
+    
+    name_index = {id_name_dict[str(id_map_inv[v])] : sage_id_map[v]  for v in id_map_inv.keys()}
+    json.dump(name_index, fp=open(
+        "./{}-name_index.json".format(organism),"w+"))
+    
+
 
     print("Logging some numbers...")
     with open("{}_{}_log.txt".format(organism,timestr), "w+") as f:
@@ -293,8 +295,7 @@ def gene_expression(organism):
                         expression_size = len(line) - 1
 
     ge_matrix  = np.zeros((len(id_bioname_dict), expression_size), dtype=np.float32)
-    id_map     = json.load(open("./{}-id_map_inv.json".format(organism)))
-    name_index = {id_bioname_dict[str(id_map[v]).strip()] : v  for v in id_map.keys()}
+    name_index = json.load(open("./{}-name_index.json".format(organism)))
 
 
     with open(expression_file.replace(".txt", "_gene.txt"), 'r') as f:
@@ -321,11 +322,11 @@ def gene_expression(organism):
 def subcellular_localization(organism):
     locations = ['Nucleus', 'Cytosol', 'Cytoskeleton', 'Peroxisome', 'Vacuole', 'Endoplasmic reticulum', 'Golgi apparatus', 'Plasma membrane', 'Endosome', 'Extracellular space', 'Mitochondrion'] 
 
-    id_map = json.load(open('{}-id_map_inv.json'.format(organism)))
+    name_index = json.load(open("./{}-name_index.json".format(organism)))
     id_bioname_dict = json.load(open("./{}-id_name_dict.json".format(organism)))
-    name_index = {id_bioname_dict[str(id_map[v]).strip()] : v  for v in id_map.keys()}
+    
 
-    sl_matrix = np.zeros((len(id_map), 11), dtype=np.int32)
+    sl_matrix = np.zeros((len(id_bioname_dict), 11), dtype=np.int32)
     with open(params_dict[organism]['go'], 'r') as f:
         for line in f:
             line = line.strip().split('\t')
@@ -356,11 +357,10 @@ def go_annotation(organism):
             line = line.strip().split('\t')
             annotations.add(line[2])
 
-    id_map = json.load(open('{}-id_map_inv.json'.format(organism)))
     id_bioname_dict = json.load(open("./{}-id_name_dict.json".format(organism)))
-    name_index = {id_bioname_dict[str(id_map[v]).strip()] : v  for v in id_map.keys()}
-    annotations = list(annotations)
-    go_matrix = np.zeros((len(id_map), len(annotations)), dtype=np.int32)
+    name_index = json.load(open("./{}-name_index.json".format(organism)))    
+    annotations     = list(annotations)
+    go_matrix = np.zeros((len(id_bioname_dict), len(annotations)), dtype=np.int32)
 
     with open(params_dict[organism]['go'], 'r') as f:
         for line in f:
