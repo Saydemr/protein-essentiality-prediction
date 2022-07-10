@@ -17,18 +17,17 @@ if os.path.isfile('{}-go_feats.npy'.format(organism)):
 if os.path.isfile('{}-ge_feats.npy'.format(organism)):
     os.remove('{}-ge_feats.npy'.format(organism))
 
-id_map_rev = {}
+n2v_to_biogrid = {}
 with open(filename, 'r') as f:
     i = 0
     f.readline()
     for line in f:
         line = line.strip().split(' ')
-        id_map_rev[int(line[0])] = i
+        n2v_to_biogrid[i] = int(line[0])
         i += 1
 
-id_map = {v: k for k, v in id_map_rev.items()}
 id_bioname_dict = json.load(open('../data/{}-id_name_dict.json'.format(organism)))
-name_index = {id_bioname_dict[str(id_map[v]).strip()] : v  for v in id_map.keys() }
+name_index = {id_bioname_dict[str(n2v_to_biogrid[v]).strip()] : v  for v in n2v_to_biogrid.keys() }
 
 
 annotations = set()
@@ -38,7 +37,7 @@ with open("../data/" + params_dict[organism]['go'], 'r') as f:
         annotations.add(line[2])
 
 annotations = list(annotations)
-go_matrix = np.zeros((len(id_map), len(annotations)))
+go_matrix = np.zeros((len(n2v_to_biogrid), len(annotations)))
 
 with open("../data/" + params_dict[organism]['go'], 'r') as f:
     for line in f:
@@ -48,18 +47,9 @@ with open("../data/" + params_dict[organism]['go'], 'r') as f:
         if gene in id_bioname_dict.values():
             go_matrix[int(name_index[gene]), annotations.index(annotation)] = 1
 
-from sklearn.preprocessing import StandardScaler
-go_matrix = StandardScaler().fit_transform(go_matrix)
-
-from sklearn.decomposition import PCA
-pca = PCA(params_dict[organism]['pca'])
-go_matrix = pca.fit_transform(go_matrix)
-
 np.save('{}-go_feats.npy'.format(organism), go_matrix)
-
-
 locations = ['Nucleus', 'Cytosol', 'Cytoskeleton', 'Peroxisome', 'Vacuole', 'Endoplasmic reticulum', 'Golgi apparatus', 'Plasma membrane', 'Endosome', 'Extracellular space', 'Mitochondrion'] 
-sl_matrix = np.zeros((len(id_map), 11))
+sl_matrix = np.zeros((len(n2v_to_biogrid), 11))
 
 with open("../data/" + params_dict[organism]['go'], 'r') as f:
     for line in f:
@@ -71,9 +61,10 @@ with open("../data/" + params_dict[organism]['go'], 'r') as f:
         index = int(name_index[name])
         sl_matrix[index, locations.index(sl_feature)] = 1
 
+
 np.save('{}-sl_feats.npy'.format(organism), sl_matrix)
 
-ge_matrix = np.zeros((len(id_map), np.load('../data/{}-ge_feats.npy'.format(organism)).shape[1]))
+ge_matrix = np.zeros((len(n2v_to_biogrid), np.load('../data/{}-ge_feats.npy'.format(organism)).shape[1]))
 
 with open("../data/" + params_dict[organism]['ge'], 'r') as f:
     for line in f:

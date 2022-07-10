@@ -5,6 +5,12 @@ import numpy as np
 sys.path.append("../data/")
 from params import params_dict
 
+def scale(*args):
+    catted = np.concatenate((args), axis=1)
+    print(catted)
+    from sklearn.preprocessing import StandardScaler
+    catted = StandardScaler().fit_transform(catted)
+    return catted
 
 name = sys.argv[1]
 option = int(sys.argv[2])
@@ -23,23 +29,33 @@ location = name.split("/")
 path_str = "/".join(location[:-2])
 
 if option == 0:
-    path_str = path_str + "/csv_imp/"
+    path_str += "/csv_imp/"
 elif option == 1:
-    path_str = path_str + "/csv_imp_sl/"
+    path_str += "/csv_imp_sl/"
 elif option == 2:
-    path_str = path_str + "/csv_imp_ge/"
+    path_str += "/csv_imp_ge/"
 elif option == 3:
-    path_str = path_str + "/csv_imp_sl_ge/"
+    path_str += "/csv_imp_go/"
 elif option == 4:
-    path_str = path_str + "/csv_imp_sl_ge_go/"
+    path_str += "/csv_imp_sl_ge_go/"
 
 path_str = path_str + location[-1]
 
-
-if os.path.isfile(name):
+if option != 0:
     sl = np.load('{}-sl_feats.npy'.format(organism))
     ge = np.load('{}-ge_feats.npy'.format(organism))
     go = np.load('{}-go_feats.npy'.format(organism))
+    if option == 1:
+        sl = scale(sl)
+    elif option == 2:
+        ge = scale(ge)
+    elif option == 3:
+        go = scale(go)
+    elif option == 4:
+        scaled = scale(sl,ge,go)
+        sl,ge,go = np.split(scaled, [sl.shape[1], sl.shape[1] + ge.shape[1]], axis=1)
+
+if os.path.isfile(name):
     with open(name) as emb:
         with open(path_str + '.csv', "w+") as out:
             with open(path_str +'_out.csv','w+') as ess_out:

@@ -1,39 +1,23 @@
-# %%
 import os
-from typing import NamedTuple
 import pandas as pd
 import numpy as np
-from pandas.io.parsers import read_csv
 import xgboost as xgb
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, balanced_accuracy_score, roc_auc_score, make_scorer, f1_score, matthews_corrcoef, precision_score, recall_score
-from sklearn.model_selection import RandomizedSearchCV,  GridSearchCV
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-from sklearn.metrics import plot_confusion_matrix
+from sklearn.model_selection import KFold, StratifiedKFold, cross_validate, RepeatedStratifiedKFold, RepeatedKFold
 import sys
 
 def booster(x_name, y_name):
 
-    X = pd.read_csv(x_name) # feature array
-    X.drop(columns=X.columns[0], axis=1, inplace=True) # drop the Protein_ID column
-    y = pd.read_csv(y_name) # target array
+    X = pd.read_csv(x_name)
+    X.drop(columns=X.columns[0], axis=1, inplace=True)
+    y = pd.read_csv(y_name)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, stratify=y)
 
-    xgb_clf = xgb.XGBClassifier(objective='binary:logistic', use_label_encoder=False, seed=42,verbosity=0)
-    xgb_clf.fit(X_train, y_train)
+    kfold = KFold(n_splits=5, shuffle=True, random_state=519)
+    xgb_clf = xgb.XGBClassifier(objective='binary:logistic', use_label_encoder=False, seed=42, verbosity=0)
+    scores = cross_validate(xgb_clf, X, y, cv=kfold, scoring=['accuracy','f1', 'roc_auc', 'precision', 'recall'] ,n_jobs=5)
 
-    predictions = xgb_clf.predict(X_test)
- 
-    # c_matrix = confusion_matrix(y_test, predictions, labels=xgb_clf.classes_)
-    # disp = ConfusionMatrixDisplay(confusion_matrix=c_matrix,
-    #                             display_labels=xgb_clf.classes_)
-    # disp.plot()
-    # plt.savefig(x_name + '_cmatrix.png')
-
-    return  accuracy_score(y_test, predictions), balanced_accuracy_score(y_test, predictions), f1_score(y_test, predictions), matthews_corrcoef(y_test, predictions), roc_auc_score(y_test, predictions), precision_score(y_test, predictions), recall_score(y_test, predictions)
+    return np.average(scores['test_accuracy']), np.std(scores['test_accuracy']), np.average(scores['test_f1']), np.std(scores['test_f1']), np.average(scores['test_roc_auc']), np.std(scores['test_roc_auc']), np.average(scores['test_precision']), np.std(scores['test_precision']), np.average(scores['test_recall']), np.std(scores['test_recall'])
 
 if os.path.isfile(sys.argv[1]):
-    a,b_a,f1,mc,roc,p,rec = booster(sys.argv[1], sys.argv[2])
-    print(a,b_a,f1,mc,roc,p,rec, sep=',', end='\n')
+    a, a_std, f1, f1_std, roc, roc_std, p, p_std, rec, rec_std = booster(sys.argv[1], sys.argv[2])
+    print(a, a_std, f1, f1_std, roc, roc_std, p, p_std, rec, rec_std, sep=',', end='\n')
