@@ -380,13 +380,6 @@ def go_annotation(organism):
         f.flush()
         f.close()
 
-    from sklearn.preprocessing import StandardScaler
-    go_matrix = StandardScaler().fit_transform(go_matrix)
-
-    from sklearn.decomposition import PCA
-    pca = PCA(n_components=params_dict[organism]['pca'])
-    go_matrix = pca.fit_transform(go_matrix)
-
     np.save('{}-go_feats.npy'.format(organism), go_matrix)
 
 
@@ -404,6 +397,10 @@ def merge_features(organism):
 
     from sklearn.preprocessing import StandardScaler
     c = StandardScaler().fit_transform(c)
+
+    from sklearn.decomposition import PCA
+    pca = PCA(n_components=params_dict[organism]['pca'])
+    c = pca.fit_transform(c)
     
     np.save('{}-feats.npy'.format(organism), c)
     sp.sparse.save_npz('../grand_blend/{}-feats.npz'.format(organism), sparse.csr_matrix(c))
