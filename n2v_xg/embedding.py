@@ -30,21 +30,16 @@ with open('../data/deg_{}.dat'.format(organism)) as f:
         essential_dict.add(line[0])
 
 location = name.split("/") 
-path_str = "/".join(location[:-2])
+path_str = "/".join(location[:-2]) + "/csv_" + str(option) + "/"
 
 feats = None
-if option == 0:
-    path_str += "/csv_imp/"
-elif option == 1:
-    path_str += "/csv_imp_sl/"
+if option == 1:
     sl = np.load('{}-sl_feats.npy'.format(organism))
     feats = scale(sl)
 elif option == 2:
-    path_str += "/csv_imp_ge/"
     ge = np.load('{}-ge_feats.npy'.format(organism))
     feats = scale(ge)
 elif option == 3:
-    path_str += "/csv_imp_go/"
     go = np.load('{}-go_feats.npy'.format(organism))
     feats = scale(go)    
 elif option == 4:

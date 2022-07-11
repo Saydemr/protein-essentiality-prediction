@@ -37,7 +37,7 @@ with open("../data/" + params_dict[organism]['go'], 'r') as f:
         annotations.add(line[2])
 
 annotations = list(annotations)
-go_matrix = np.zeros((len(n2v_to_biogrid), len(annotations)))
+go_matrix = np.zeros((len(n2v_to_biogrid), len(annotations)), dtype=np.float32)
 
 with open("../data/" + params_dict[organism]['go'], 'r') as f:
     for line in f:
@@ -49,7 +49,7 @@ with open("../data/" + params_dict[organism]['go'], 'r') as f:
 
 np.save('{}-go_feats.npy'.format(organism), go_matrix)
 locations = ['Nucleus', 'Cytosol', 'Cytoskeleton', 'Peroxisome', 'Vacuole', 'Endoplasmic reticulum', 'Golgi apparatus', 'Plasma membrane', 'Endosome', 'Extracellular space', 'Mitochondrion'] 
-sl_matrix = np.zeros((len(n2v_to_biogrid), 11))
+sl_matrix = np.zeros((len(n2v_to_biogrid), 11), dtype=np.float32)
 
 with open("../data/" + params_dict[organism]['go'], 'r') as f:
     for line in f:
@@ -64,7 +64,7 @@ with open("../data/" + params_dict[organism]['go'], 'r') as f:
 
 np.save('{}-sl_feats.npy'.format(organism), sl_matrix)
 
-ge_matrix = np.zeros((len(n2v_to_biogrid), np.load('../data/{}-ge_feats.npy'.format(organism)).shape[1]))
+ge_matrix = np.zeros((len(n2v_to_biogrid), np.load('../data/{}-ge_feats.npy'.format(organism)).shape[1]), dtype=np.float32)
 
 with open("../data/" + params_dict[organism]['ge'], 'r') as f:
     for line in f:
