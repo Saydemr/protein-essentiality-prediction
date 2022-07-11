@@ -1,6 +1,8 @@
 organism="$1"
+mkdir -p "log"
 for option in 0 1 2 3 4
 do
+    mkdir -p "csv_${option}"
     echo "Dimension,Epochs,Length_of_Walk,Num_Walks,Context_Size,Return_Hyperparam,Inout_Hyperparam,Accuracy,std,F1_Score,std,Roc_Auc,std,Precision,std,Recall,std" > log/${organism}_results_${option}.csv
     for dim in 32 64 128
     do
