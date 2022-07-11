@@ -2,21 +2,25 @@ import json
 import sys
 import os
 import numpy as np
+
 sys.path.append("../data/")
 from params import params_dict
 
-def scale(*args):
-    catted = np.concatenate((args), axis=1)
-    print(catted)
-    from sklearn.preprocessing import StandardScaler
-    catted = StandardScaler().fit_transform(catted)
-    return catted
+
 
 name = sys.argv[1]
 option = int(sys.argv[2])
 organism = sys.argv[3]
 
-id_name_dict = json.load(open('../data/{}-id_name_dict.json'.format(organism)))
+def scale(*args):
+    catted = np.concatenate((args), axis=1)
+    from sklearn.preprocessing import StandardScaler
+    catted = StandardScaler().fit_transform(catted)
+    from sklearn.decomposition import PCA
+    n_comp = min(params_dict[organism]['pca'],catted.shape[1])
+    pca = PCA(n_components=n_comp)
+    catted = pca.fit_transform(catted)
+    return catted
 
 
 essential_dict = set()
@@ -28,33 +32,31 @@ with open('../data/deg_{}.dat'.format(organism)) as f:
 location = name.split("/") 
 path_str = "/".join(location[:-2])
 
+feats = None
 if option == 0:
     path_str += "/csv_imp/"
 elif option == 1:
     path_str += "/csv_imp_sl/"
+    sl = np.load('{}-sl_feats.npy'.format(organism))
+    feats = scale(sl)
 elif option == 2:
     path_str += "/csv_imp_ge/"
+    ge = np.load('{}-ge_feats.npy'.format(organism))
+    feats = scale(ge)
 elif option == 3:
     path_str += "/csv_imp_go/"
+    go = np.load('{}-go_feats.npy'.format(organism))
+    feats = scale(go)    
 elif option == 4:
     path_str += "/csv_imp_sl_ge_go/"
-
-path_str = path_str + location[-1]
-
-if option != 0:
     sl = np.load('{}-sl_feats.npy'.format(organism))
     ge = np.load('{}-ge_feats.npy'.format(organism))
     go = np.load('{}-go_feats.npy'.format(organism))
-    if option == 1:
-        sl = scale(sl)
-    elif option == 2:
-        ge = scale(ge)
-    elif option == 3:
-        go = scale(go)
-    elif option == 4:
-        scaled = scale(sl,ge,go)
-        sl,ge,go = np.split(scaled, [sl.shape[1], sl.shape[1] + ge.shape[1]], axis=1)
+    feats = scale(sl,ge,go)
 
+path_str += location[-1]
+
+id_name_dict = json.load(open('../data/{}-id_name_dict.json'.format(organism)))
 if os.path.isfile(name):
     with open(name) as emb:
         with open(path_str + '.csv', "w+") as out:
@@ -69,41 +71,16 @@ if os.path.isfile(name):
                         out.write("Protein_ID")
                         for i in range(1,len(line)):
                             out.write(",Emb_" + str(i))
-                        if option == 0:
-                            pass
-                        elif option == 1:
-                            for i in range(sl.shape[1]):
-                                out.write(",SL_" + str(i))
-                        elif option == 2:
-                            for i in range(ge.shape[1]):
-                                out.write(",GE_" + str(i))
-                        elif option == 3:
-                            for i in range(go.shape[1]):
-                                out.write(",GO_" + str(i))
-                        elif option == 4:
-                            for i in range(sl.shape[1]):
-                                out.write(",SL_" + str(i))
-                            for i in range(ge.shape[1]):
-                                out.write(",GE_" + str(i))
-                            for i in range(go.shape[1]):
-                                out.write(",GO_" + str(i))   
+                        if option != 0:
+                            for i in range(feats.shape[1]):
+                                out.write(",Feature_" + str(i+1))
                         out.write('\n')
                         first_line = False
-                    
                     out.write(','.join(line))
                     if option == 0:
                         out.write('\n')
-                    elif option == 1:
-                        out.write(',' + ','.join(map(str,sl[miter])) + '\n')
-                    elif option == 2:
-                        out.write(',' + ','.join(map(str,ge[miter])) + '\n')
-                    elif option == 3:
-                        out.write(',' + ','.join(map(str,go[miter])) + '\n')
-                    elif option == 4:
-                        out.write(',' + ','.join(map(str,sl[miter])))
-                        out.write(',' + ','.join(map(str,ge[miter])))
-                        out.write(',' + ','.join(map(str,go[miter])) + '\n')
-                    
+                    else:
+                        out.write(',' + ','.join(map(str,feats[miter])) + '\n')
                 
                     if id_name_dict[line[0].strip()] in essential_dict:
                         ess_out.write('1\n')
