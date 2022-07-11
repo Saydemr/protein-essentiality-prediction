@@ -1,5 +1,5 @@
 organism="$1"
-for option in 0 1 2 3 4
+for option in 2 3 4
 do
     echo "Dimension,Epochs,Length_of_Walk,Num_Walks,Context_Size,Return_Hyperparam,Inout_Hyperparam,Accuracy,std,F1_Score,std,Roc_Auc,std,Precision,std,Recall,std" > log/${organism}_results_${option}.csv
     for dim in 32 64 128
@@ -21,7 +21,7 @@ do
                                     echo "$FILE exists"
 
                                     if [ $option != 0 ]; then 
-                                        python3 reorder.py $FILE $organism
+                                        python3 reorder.py $FILE $organism $option
                                     fi
                                     python3 embedding.py ${FILE} ${option} ${organism}
                                     log_file="log/${organism}_results_${option}.csv"
