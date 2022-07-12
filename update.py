@@ -127,34 +127,33 @@ if not isfile('./data/degannotation-e.dat'):
     else:
         print("Error downloading essential genes data. Server is down.")
 
-else:
-    if not isfile('./data/deg_sc.dat'):
-        with open ('./data/degannotation-e.dat', 'r') as f:
-            with open ('./data/deg_sc.dat', 'w+', encoding='UTF8') as g:
-                f.readline()
-                for line in f:
-                    line = line.strip()
-                    line = line.split('\t')
-
-                    if line[7] == 'Saccharomyces cerevisiae':
-                        g.write(line[2] + '\n')
-                
-    if not isfile('./data/deg_hs.dat'):
-        gene_num_listed = {}
-        with open ('./data/degannotation-e.dat', 'r', encoding='UTF8') as f:
+if not isfile('./data/deg_sc.dat'):
+    with open ('./data/degannotation-e.dat', 'r') as f:
+        with open ('./data/deg_sc.dat', 'w+', encoding='UTF8') as g:
             f.readline()
             for line in f:
                 line = line.strip()
                 line = line.split('\t')
-                if line[7] == 'Homo sapiens':
-                    if line[2] in gene_num_listed:
-                        gene_num_listed[line[2]] += 1
-                    else:
-                        gene_num_listed[line[2]] = 1
+
+                if line[7] == 'Saccharomyces cerevisiae':
+                    g.write(line[2] + '\n')
+            
+if not isfile('./data/deg_hs.dat'):
+    gene_num_listed = {}
+    with open ('./data/degannotation-e.dat', 'r', encoding='UTF8') as f:
+        f.readline()
+        for line in f:
+            line = line.strip()
+            line = line.split('\t')
+            if line[7] == 'Homo sapiens':
+                if line[2] in gene_num_listed:
+                    gene_num_listed[line[2]] += 1
+                else:
+                    gene_num_listed[line[2]] = 1
 
 
-        print("Preparing Homo Sapiens annotations...")
-        with open ('./data/deg_hs.dat', 'w+') as g:
-            for key in gene_num_listed:
-                if gene_num_listed[key] > 4:
-                    g.write(key + '\n')
+    print("Preparing Homo Sapiens annotations...")
+    with open ('./data/deg_hs.dat', 'w+') as g:
+        for key in gene_num_listed:
+            if gene_num_listed[key] > 4:
+                g.write(key + '\n')
