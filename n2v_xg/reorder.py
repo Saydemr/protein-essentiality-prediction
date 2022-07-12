@@ -9,15 +9,6 @@ filename = sys.argv[1]
 organism = sys.argv[2]
 option   = int(sys.argv[3])
 
-if os.path.isfile('{}-sl_feats.npy'.format(organism)):
-    os.remove('{}-sl_feats.npy'.format(organism))
-
-if os.path.isfile('{}-go_feats.npy'.format(organism)):
-    os.remove('{}-go_feats.npy'.format(organism))
-
-if os.path.isfile('{}-ge_feats.npy'.format(organism)):
-    os.remove('{}-ge_feats.npy'.format(organism))
-
 n2v_to_biogrid = {}
 with open(filename, 'r') as f:
     i = 0
