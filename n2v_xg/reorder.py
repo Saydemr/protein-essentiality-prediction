@@ -62,7 +62,7 @@ if option == 1 or option == 4:
 if option == 2 or option == 4:
     ge_matrix = np.zeros((len(n2v_to_biogrid), np.load('../data/{}-ge_feats.npy'.format(organism)).shape[1]), dtype=np.float32)
 
-    with open("../data/" + params_dict[organism]['ge'], 'r') as f:
+    with open("../data/" + params_dict[organism]['ge_parsed'], 'r') as f:
         for line in f:
             line = line.strip().split('\t')
             name = line[0]
