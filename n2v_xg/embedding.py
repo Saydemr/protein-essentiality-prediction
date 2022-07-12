@@ -43,7 +43,6 @@ elif option == 3:
     go = np.load('{}-go_feats.npy'.format(organism))
     feats = scale(go)    
 elif option == 4:
-    path_str += "/csv_imp_sl_ge_go/"
     sl = np.load('{}-sl_feats.npy'.format(organism))
     ge = np.load('{}-ge_feats.npy'.format(organism))
     go = np.load('{}-go_feats.npy'.format(organism))
