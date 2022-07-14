@@ -11,7 +11,7 @@ from scipy import sparse
 import fnmatch
 from params import params_dict
 import time
-timestr = time.strftime("%d.%m.%Y_%H:%M:%S_%z")
+timestr = time.strftime("%d.%m.%Y_%H.%M.%S_%z")
 
 
 def main(opt):
