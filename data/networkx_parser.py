@@ -18,12 +18,7 @@ def main(opt):
     create_graph(opt['organism'])
 
 
-def create_graph(organism):
-    """
-    Create a networkx graph from the BIOGRID data
-    """
-    print("Organism: {}".format((params_dict[organism]['full_name']).replace('_', ' ')))
-    print("Loading graph...")
+def parse_graph(organism, removed_nodes=None):
 
     ppi_graph = nx.Graph()
 
@@ -45,6 +40,9 @@ def create_graph(organism):
         for line in f:
             line = line.strip()
             line = line.split("\t")
+
+            if removed_nodes != None and i in removed_nodes and removed_nodes[i] == int(line[1]):
+                continue
             
             if line[1] == line[2]:
                 continue
@@ -98,9 +96,18 @@ def create_graph(organism):
                 i += 1
 
             else:
-                ppi_graph.add_edge(
-                    id_map_int[int(line[1])], id_map_int[int(line[2])])
+                ppi_graph.add_edge(id_map_int[int(line[1])], id_map_int[int(line[2])])
+    
+    return ppi_graph, id_map, id_map_int, id_map_inv, id_map_inv_int, id_name_dict
 
+def create_graph(organism):
+    """
+    Create a networkx graph from the BIOGRID data
+    """
+    print("Organism: {}".format((params_dict[organism]['full_name']).replace('_', ' ')))
+    print("Loading graph...")
+
+    ppi_graph, id_map, id_map_int, id_map_inv, id_map_inv_int, id_name_dict = parse_graph(organism)
 
     print("Graph info...")
     print("Number of nodes: ", ppi_graph.number_of_nodes())
@@ -108,17 +115,16 @@ def create_graph(organism):
     print("Number of edges: ", ppi_graph.number_of_edges())
     print()
 
+    removed_index = {}
     for component in list(nx.connected_components(ppi_graph)):
         if len(component) < 10:
             for node in component:
-                ppi_graph.remove_node(node)
-            
-                a = id_map_inv.pop(node)
-                b = id_map_inv_int.pop(node)
-                c = id_map.pop(a)
-                d = id_map_int.pop(b)
-                id_name_dict.pop(str(a))
-            
+                removed_index.update({node : b})
+    
+    if len(removed_index) > 0:
+        ppi_graph, id_map, id_map_int, id_map_inv, id_map_inv_int, id_name_dict = parse_graph(organism, removed_index)
+    
+     
     print("Checking the graph if smth is modified.")
     print("Number of nodes: ", ppi_graph.number_of_nodes())
     print("Number of connected components", nx.number_connected_components(ppi_graph))
@@ -192,22 +198,16 @@ def create_graph(organism):
 
     print("Writing graphs to JSON files...")
 
-    json.dump(class_map, fp=open(
-        "../GraphSAGE/example_data/{}-class_map.json".format(organism), "w+"))
-    json.dump(json_graph.node_link_data(ppi_graph),
-              fp=open("../GraphSAGE/example_data/{}-G.json".format(organism), "w+"))
-    json.dump(id_map_inv,
-              fp=open("./{}-id_map_inv.json".format(organism), "w+"))
-    json.dump(sage_id_map, fp=open(
-        "../GraphSAGE/example_data/{}-id_map.json".format(organism), "w+"))
-    json.dump(sage_id_map, fp=open(
-        "./{}-id_map.json".format(organism), "w+"))
-    json.dump(id_name_dict, fp=open(
-        "./{}-id_name_dict.json".format(organism), "w+"))
+    json.dump(class_map, fp=open("../GraphSAGE/example_data/{}-class_map.json".format(organism), "w+"), indent=4)
+    json.dump(sage_id_map, fp=open("../GraphSAGE/example_data/{}-id_map.json".format(organism), "w+"), indent=4)
+    json.dump(json_graph.node_link_data(ppi_graph), fp=open("../GraphSAGE/example_data/{}-G.json".format(organism), "w+"), indent=4)
+    
+    json.dump(id_map_inv, fp=open("./{}-id_map_inv.json".format(organism), "w+"), indent=4)
+    json.dump(sage_id_map, fp=open("./{}-id_map.json".format(organism), "w+"), indent=4)
+    json.dump(id_name_dict, fp=open("./{}-id_name_dict.json".format(organism), "w+"), indent=4)
     
     name_index = {id_name_dict[str(id_map_inv[v])] : sage_id_map[v]  for v in id_map_inv.keys()}
-    json.dump(name_index, fp=open(
-        "./{}-name_index.json".format(organism),"w+"))
+    json.dump(name_index, fp=open("./{}-name_index.json".format(organism),"w+"), indent=4)
     
 
 
