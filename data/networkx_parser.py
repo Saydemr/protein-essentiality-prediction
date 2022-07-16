@@ -193,19 +193,15 @@ def create_graph(organism):
     print("Writing graphs to JSON files...")
 
     json.dump(class_map, fp=open(
-        "../GraphSAGE/{}-class_map.json".format(organism), "w+"))
+        "../GraphSAGE/example_data/{}-class_map.json".format(organism), "w+"))
     json.dump(json_graph.node_link_data(ppi_graph),
-              fp=open("../GraphSAGE/{}-G.json".format(organism), "w+"))
-    json.dump(id_map_inv,
-              fp=open("../GraphSAGE/{}-id_map_inv.json".format(organism), "w+"))
+              fp=open("../GraphSAGE/example_data/{}-G.json".format(organism), "w+"))
     json.dump(id_map_inv,
               fp=open("./{}-id_map_inv.json".format(organism), "w+"))
     json.dump(sage_id_map, fp=open(
-        "../GraphSAGE/{}-id_map.json".format(organism), "w+"))
+        "../GraphSAGE/example_data/{}-id_map.json".format(organism), "w+"))
     json.dump(sage_id_map, fp=open(
         "./{}-id_map.json".format(organism), "w+"))
-    json.dump(id_map, fp=open(
-        "../GraphSAGE/{}-id_map_dummy.json".format(organism), "w+"))
     json.dump(id_name_dict, fp=open(
         "./{}-id_name_dict.json".format(organism), "w+"))
     
@@ -317,7 +313,7 @@ def gene_expression(organism):
         f.close()
     
     np.save('{}-ge_feats.npy'.format(organism), ge_matrix)
-
+    np.save('../GraphSAGE/example_data/{}-ge_feats.npy'.format(organism), ge_matrix)
 
 def subcellular_localization(organism):
     locations = ['Nucleus', 'Cytosol', 'Cytoskeleton', 'Peroxisome', 'Vacuole', 'Endoplasmic reticulum', 'Golgi apparatus', 'Plasma membrane', 'Endosome', 'Extracellular space', 'Mitochondrion'] 
@@ -348,7 +344,7 @@ def subcellular_localization(organism):
         f.close()
 
     np.save('{}-sl_feats.npy'.format(organism), sl_matrix)
-
+    np.save('../GraphSAGE/example_data/{}-sl_feats.npy'.format(organism), sl_matrix)
 
 def go_annotation(organism):
     annotations = set()
@@ -381,6 +377,7 @@ def go_annotation(organism):
         f.close()
 
     np.save('{}-go_feats.npy'.format(organism), go_matrix)
+    np.save('../GraphSAGE/example_data/{}-go_feats.npy'.format(organism), go_matrix)
 
 
 def rna_seq(organism):
@@ -403,6 +400,7 @@ def merge_features(organism):
     c = pca.fit_transform(c)
     
     np.save('{}-feats.npy'.format(organism), c)
+    np.save('../GraphSAGE/example_data/{}-all-feats.npy'.format(organism), c)
     sp.sparse.save_npz('../grand_blend/{}-feats.npz'.format(organism), sparse.csr_matrix(c))
 
     with open("{}_{}_log.txt".format(organism,timestr), "a+") as f:
