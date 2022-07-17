@@ -119,6 +119,7 @@ def create_graph(organism):
     for component in list(nx.connected_components(ppi_graph)):
         if len(component) < 10:
             for node in component:
+                b = id_map_inv_int.pop(node)
                 removed_index.update({node : b})
     
     if len(removed_index) > 0:
@@ -193,8 +194,12 @@ def create_graph(organism):
 
     print('Creating id-map')
     sage_id_map = {}
+    max_deg = -1
     for index, node in enumerate(ppi_graph.nodes):
         sage_id_map[node] = int(index)
+        if ppi_graph.degree(node) > max_deg:
+            max_deg = ppi_graph.degree(node)
+
 
     print("Writing graphs to JSON files...")
 
@@ -222,6 +227,7 @@ def create_graph(organism):
         f.write("Number of essential genes in test set (GraphSAGE): {}\n".format(essential_test_count))
         f.write("Number of instances in training (0), test (1) and validation (2)\n")
         f.write(str(Counter(distribution_samples)) + "\n")
+        f.write("Max degree : {}\n".format(max_deg))
         f.flush()
         f.close()
 
