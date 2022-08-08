@@ -1,18 +1,31 @@
-echo "Model,Class,Accuracy,Balanced_Accuracy,F1_Score,Matthews_Corrcoef,Roc_Auc,Precision,Recall" > log/logs_last.csv
+echo "Model,Class,LR,Accuracy,F1_Score,Roc_Auc,Precision,Recall" > log/logs_unsup_new.csv
 
-StringVal="gcn graphsage_maxpool graphsage_mean graphsage_meanpool graphsage_seq n2v"
+organism="$1"
+Models="graphsage_maxpool graphsage_meanpool n2v"
 
-
-for model in $StringVal
+for option in 0 1 2 3 4
 do
-    for i in 0 1 2 3 4
-    do
-        emb_filename="./runs/sc_${i}_/unsup-example_data/${model}_small_0.000010/emb.csv"
-        es_filename="./runs/sc_${i}_/unsup-example_data/${model}_small_0.000010/emb_out.csv"
+    for identity_dim in 32
+        do
+            for lr in 0.005 0.001 0.0001
+            do
+                for epoch in 2
+                do
+                    for batch_size in 32
+                    do
+                        for model in $Models
+                        do
+                            emb_filename="./unsupervised/org${organism}_e${epoch}_b${batch_size}_id${identity_dim}_opt${option}/unsup-example_data/${model}_small_${lr}/emb.csv"
+                            es_filename="./unsupervised/org${organism}_e${epoch}_b${batch_size}_id${identity_dim}_opt${option}/unsup-example_data/${model}_small_${lr}/emb_out.csv"
 
-        if [ -f $emb_filename ]; then
-            echo -n "${i},${model}," >> log/logs_last.csv
-            python3 sage_boost.py $emb_filename $es_filename >> log/logs_last.csv
-        fi
+                            if [ -f $emb_filename ]; then
+                                echo -n "${option},${model},${lr}," >> og/logs_unsup_new.csv
+                                python3 sage_boost.py $emb_filename $es_filename >> log/logs_unsup_new.csv
+                            fi
+                        done
+                    done
+                done
+            done
+        done
     done
 done

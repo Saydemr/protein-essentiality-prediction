@@ -1,18 +1,17 @@
 import os
 
-models = ['gcn', 'graphsage_maxpool', 'graphsage_mean', 'graphsage_meanpool', 'graphsage_seq']
-
-with open('./log/logs_last_sup.csv', 'w+') as log_csv:
-    log_csv.write('Model,Class,F1_Micro,F1_Macro,Loss,TestorVal\n')
+models = ['graphsage_maxpool', 'graphsage_meanpool']
+identity_dim = 32
+epoch = 2
+batch_size = 32
+with open('./log/logs_sup_new.csv', 'w+') as log_csv:
+    log_csv.write('Model,Class,LR,Accuracy,F1,ROC_AUC,Precision,Recall,Loss,TestorVal\n')
     for model in models:
-        for i in range(5):
-            val_txt  = './runs/' + str(i) + '/sup-example_data/' + model + '_small_0.0100/val_stats.txt'
-            test_txt = './runs/' + str(i) + '/sup-example_data/' + model + '_small_0.0100/test_stats.txt'
-
-            if os.path.isfile(val_txt) and os.path.isfile(test_txt):
-                with open(val_txt, 'r') as val_txt:
+        for learning_rate in [0.01, 0.001, 0.0001]:
+            for option in range(5):
+                base_dir = './supervised/org{}_e{}_b{}_id{}_opt{}/sup-example_data/{}_small_{}/'.format(organism,epoch,batch_size,identity_dim,option,model,learning_rate)
+                test_txt = base_dir + 'test_stats.txt'
+                if os.path.isfile(test_txt):
                     with open(test_txt, 'r') as test_txt:
-                        val_line = val_txt.readline().strip().replace('=', ' ').split()
                         test_line = test_txt.readline().strip().replace('=', ' ').split()
-                        log_csv.write(str(i) + ',' + model + ',' + test_line[1] + ',' + test_line[3] + ',' + test_line[5] + ',Test\n')
-                        log_csv.write(str(i) + ',' + model + ',' + val_line[1] + ',' + val_line[3] + ',' + val_line[5] + ',Val\n')
+                        log_csv.write('{},{},{},{},{},{},{},{},Test\n'.format(option,model,learning_rate,test_line[3],test_line[5],test_line[7],test_line[9],test_line[11]]))
