@@ -296,6 +296,7 @@ def gene_expression(organism):
                         g.write(line[0] + '\t' + '\t'.join(line[1:]) + '\n')
                         expression_size = len(line) - 1
 
+    
     ge_matrix  = np.zeros((len(id_bioname_dict), expression_size), dtype=np.float32)
     name_index = json.load(open("./{}-name_index.json".format(organism)))
 
@@ -318,6 +319,13 @@ def gene_expression(organism):
         f.flush()
         f.close()
     
+    from sklearn.preprocessing import StandardScaler
+    ge_matrix = StandardScaler().fit_transform(ge_matrix)
+
+    from sklearn.decomposition import PCA
+    pca = PCA(n_components=params_dict[organism]['pca'])
+    ge_matrix = pca.fit_transform(ge_matrix)
+
     np.save('{}-ge_feats.npy'.format(organism), ge_matrix)
     np.save('../GraphSAGE/example_data/{}-ge_feats.npy'.format(organism), ge_matrix)
 
@@ -328,7 +336,7 @@ def subcellular_localization(organism):
     id_bioname_dict = json.load(open("./{}-id_name_dict.json".format(organism)))
     
 
-    sl_matrix = np.zeros((len(id_bioname_dict), 11), dtype=np.int32)
+    sl_matrix = np.zeros((len(id_bioname_dict), 11), dtype=np.int8)
     with open(params_dict[organism]['go'], 'r') as f:
         for line in f:
             line = line.strip().split('\t')
@@ -362,7 +370,7 @@ def go_annotation(organism):
     id_bioname_dict = json.load(open("./{}-id_name_dict.json".format(organism)))
     name_index = json.load(open("./{}-name_index.json".format(organism)))    
     annotations     = list(annotations)
-    go_matrix = np.zeros((len(id_bioname_dict), len(annotations)), dtype=np.int32)
+    go_matrix = np.zeros((len(id_bioname_dict), len(annotations)), dtype=np.int8)
 
     with open(params_dict[organism]['go'], 'r') as f:
         for line in f:
@@ -381,6 +389,15 @@ def go_annotation(organism):
         f.write("Number of genes that has go annotation vector: {}\n".format(go_non_zero_count))
         f.flush()
         f.close()
+
+
+
+    from sklearn.preprocessing import StandardScaler
+    go_matrix = StandardScaler().fit_transform(go_matrix)
+
+    from sklearn.decomposition import PCA
+    pca = PCA(n_components=params_dict[organism]['pca'])
+    go_matrix = pca.fit_transform(go_matrix)
 
     np.save('{}-go_feats.npy'.format(organism), go_matrix)
     np.save('../GraphSAGE/example_data/{}-go_feats.npy'.format(organism), go_matrix)
