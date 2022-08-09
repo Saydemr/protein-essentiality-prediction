@@ -325,6 +325,7 @@ def gene_expression(organism):
     from sklearn.decomposition import PCA
     pca = PCA(n_components=params_dict[organism]['pca'])
     ge_matrix = pca.fit_transform(ge_matrix)
+    print(ge_matrix.dtype)
 
     np.save('{}-ge_feats.npy'.format(organism), ge_matrix)
     np.save('../GraphSAGE/example_data/{}-ge_feats.npy'.format(organism), ge_matrix)
@@ -398,6 +399,7 @@ def go_annotation(organism):
     from sklearn.decomposition import PCA
     pca = PCA(n_components=params_dict[organism]['pca'])
     go_matrix = pca.fit_transform(go_matrix)
+    print(go_matrix.dtype)
 
     np.save('{}-go_feats.npy'.format(organism), go_matrix)
     np.save('../GraphSAGE/example_data/{}-go_feats.npy'.format(organism), go_matrix)
