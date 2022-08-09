@@ -25,7 +25,7 @@ def most_recent_available(version_number):
     if r.status_code == 200:
         return most_recent_available(version_number + 1)
     else:
-        return version_number - 1
+        return 211
 
 
 # Get the current version
@@ -40,7 +40,7 @@ else:
 most_recent = most_recent_available(version_number)
 
 # If the next version is available, download it
-if most_recent > version_number:
+if most_recent == 211:
     
     # Remove the old files if exist
     print("Downloading the newest BioGRID version")
