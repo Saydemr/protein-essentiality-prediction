@@ -18,11 +18,11 @@ with open(params_dict[organism]['deg']) as f:
         essential_dict.add(line[0])
 
 identity_dim = 32
-epoch = 2
-batch_size = 32
+epoch = 1
+batch_size = 512
 for option in range(5):
     for model in models:
-        for learning_rate in [0.005 0.001 0.0001]:
+        for learning_rate in [0.005, 0.001, 0.0001]:
             base_dir = './unsupervised/org{}_e{}_b{}_id{}_opt{}/unsup-example_data/{}_small_{}/'.format(organism,epoch,batch_size,identity_dim,option,model,learning_rate)
             path_txt = base_dir + 'val.txt'
             path_npy = base_dir + 'val.npy'

@@ -1,4 +1,4 @@
-echo "Model,Class,LR,Accuracy,F1_Score,Roc_Auc,Precision,Recall" > log/logs_unsup_new.csv
+echo "Option,Model,LR,Accuracy,F1_Score,Roc_Auc,Precision,Recall" > log/logs_unsup_new.csv
 
 organism="$1"
 Models="graphsage_maxpool graphsage_meanpool n2v"
@@ -7,11 +7,11 @@ for option in 0 1 2 3 4
 do
     for identity_dim in 32
         do
-            for lr in 0.005 0.001 0.0001
+            for lr in 0.0001
             do
-                for epoch in 2
+                for epoch in 1
                 do
-                    for batch_size in 32
+                    for batch_size in 512
                     do
                         for model in $Models
                         do
