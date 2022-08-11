@@ -19,5 +19,5 @@ with open('./log/logs_sup_new.csv', 'w+') as log_csv:
             if os.path.isfile(val_txt):
                 with open(val_txt, 'r') as val_txt:
                     val_line = val_txt.readline().strip().replace('=', ' ').split()
-                    log_csv.write('{},{},{},{},{},{},{},{},Val\n'.format(option,model,learning_rate,test_line[3],test_line[5],test_line[7],test_line[9],test_line[11]))
+                    log_csv.write('{},{},{},{},{},{},{},{},Val\n'.format(option,model,learning_rate,val_line[3],val_line[5],val_line[7],val_line[9],val_line[11]))
     
