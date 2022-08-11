@@ -1,11 +1,10 @@
-from operator import le
 import os
 
 models = ["gcn", "graphsage_maxpool", "graphsage_mean", "graphsage_meanpool", "graphsage_seq"]
 organism = "sc"
 learning_rate = "0.0100"
 with open('./log/logs_sup_249.csv', 'w+') as log_csv:
-    log_csv.write('Option,Model,Accuracy,F1,ROC_AUC,Precision,Recall,TestorVal\n')
+    log_csv.write('Option,Model,Learning_Rate,Accuracy,F1,ROC_AUC,Precision,Recall,TestorVal\n')
     for model in models:
         for option in range(5):
             base_dir = './supervised_249/org{}_id_opt{}/sup-example_data/{}_small_{}/'.format(organism,option,model,learning_rate)
