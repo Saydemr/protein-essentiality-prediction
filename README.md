@@ -1,11 +1,14 @@
 # EPPuGNN
 
-This is the repository of a senior project titled "**E**ssential **P**rotein **P**rediction **u**sing **G**raph **N**eural **N**etworks". Project investigates state-of-the-art Graph Neural Network models that fits to essentiality prediction. GNN models utilized are node2vec, GraphSAGE and BLEND. Other computational, topological etc. methods are provided to see the progress clearer. XGBoost is used as the classification algorithm. Use of several biological information sources to enhance the prediction is also analyzed. Relevant materials including code, data, documents etc. are all published to this repository.
+This is the repository of a senior project titled **E**ssential **P**rotein **P**rediction **u**sing **G**raph **N**eural **N**etworks. Project investigates state-of-the-art Graph Neural Network models that fits to essentiality prediction. GNN models utilized are [node2vec](https://github.com/aditya-grover/node2vec), [GraphSAGE](https://github.com/williamleif/GraphSAGE) and two diffusion based GNNs namely [GRAND](https://github.com/twitter-research/graph-neural-pde) and [BLEND](https://github.com/twitter-research/graph-neural-pde). Other computational, topological etc. methods are provided to see the progress clearer. [XGBoost](https://github.com/dmlc/xgboost) is used as the classification algorithm for unsupervised models. Use of several biological information sources such as gene expressions, go annotations to enhance the prediction is also analyzed. Relevant materials including code, data, documents etc. are all published to this repository.
 
 ## How To
 
 ### Pre-requisities
-- Python >= 3.8 with Pip
+- [Conda](https://www.anaconda.com/products/distribution)
+- [Python](https://www.python.org/downloads/)
+- [CUDA](https://developer.nvidia.com/cuda-11.3.0-download-archive) v11.3
+
 
 ### Clone the repository
 ```
@@ -15,7 +18,7 @@ git clone --depth 1 https://github.com/Saydemr/EPPuGNN.git
 ```
 python update.py
 ```
-If you see anything that points to an error, you can download the missing files from [here](https://drive.google.com/drive/folders/1iCOUWxvvAYtPaAUbcvRW-95dP2I64tOd). Downloaded files must be placed under `./data` directory.
+If you see anything that points to an error, you can download the missing files from [here](https://drive.google.com/drive/folders/1iCOUWxvvAYtPaAUbcvRW-95dP2I64tOd). Downloaded files must be placed under `./data` directory before running the next commands.
 
 ### Compile data needed for each GNN
 ```
@@ -24,7 +27,9 @@ cd ./data && python networkx_parser.py --organism sc
 Outputs will be placed under respective directories of the GNNs.
 
 ### Run GNNs to get results.
-For now refer, to the GitHub pages of the each GNN. This part will be updated after the automated pipeline is considered as ready.
+For now, refer to the GitHub pages of the each GNN. This part will be updated after the automated pipeline is considered ready.
+We forked said GNNs to integrate some necessary features missing in the original repositories.
+You can find our forks from [here](https://github.com/Saydemr/GraphSAGE) and [here](https://github.com/Saydemr/pde).
 
 
 ## Project Information
