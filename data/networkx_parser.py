@@ -245,7 +245,7 @@ def gene_expression(organism):
     expression_size = 0
 
     non_zero_count = 0
-    if organism == 'sc' or organism == 'mm':
+    if organism == 'sc' or organism == 'mm' or organism == 'dm':
         with open(params_dict[organism]['map'], 'r') as f:
             for line in f:
                 if line.startswith('#') or line.startswith('ID'):
@@ -429,7 +429,7 @@ def merge_features(organism):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--organism', type=str, help='Organism name : sc hs', default='sc')
+    parser.add_argument('--organism', type=str, help='Organism name : sc hs mm dm', default='sc')
     args = parser.parse_args()
     opt = vars(args)
 

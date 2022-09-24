@@ -23,7 +23,8 @@ def main(args):
         
         # Unzip the file
         zf = ZipFile('./data/BIOGRID-ORGANISM-LATEST.tab3.zip', 'r')
-        filelist = [x for x in zf.filelist if 'Homo_sapiens' in x.filename or 'Saccharomyces_cerevisiae' in x.filename or 'Mus_musculus' in x.filename]
+        filelist = [x for x in zf.filelist if 'Homo_sapiens' in x.filename or 'Saccharomyces_cerevisiae' in x.filename 
+                        or 'Mus_musculus' in x.filename or 'Drosophila_melanogaster' in x.filename]
         for file in filelist:
             zf.extract(file, './data')
 
@@ -69,9 +70,24 @@ def main(args):
                 shutil.copyfileobj(f_in, f_out)
 
     if not isfile('./data/GPL1261-56135.txt'):
-        supplementary_sc = requests.get('https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?mode=raw&is_datatable=true&acc=GPL1261&id=56135&db=GeoDb_blob143', stream=True)
+        supplementary_mm = requests.get('https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?mode=raw&is_datatable=true&acc=GPL1261&id=56135&db=GeoDb_blob143', stream=True)
         with open('./data/GPL1261-56135.txt', 'wb') as f:
-            f.write(supplementary_sc.content)
+            f.write(supplementary_mm.content)
+
+
+    if not isfile('./data/GSE7763_series_matrix.txt'):
+        expression_dm = requests.get('https://ftp.ncbi.nlm.nih.gov/geo/series/GSE7nnn/GSE7763/matrix/GSE7763_series_matrix.txt.gz', stream=True)
+        with open('./data/GSE7763_series_matrix.txt.gz', 'wb') as f:
+            f.write(expression_dm.content)
+
+        with gzip.open('./data/GSE7763_series_matrix.txt.gz', 'rb') as f_in:
+            with open('./data/GSE7763_series_matrix.txt', 'wb') as f_out:
+                shutil.copyfileobj(f_in, f_out)
+
+    if not isfile('./data/GPL1322-26772.txt'):
+        supplementary_dm = requests.get('https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?mode=raw&is_datatable=true&acc=GPL1322&id=26772&db=GeoDb_blob144', stream=True)
+        with open('./data/GPL1322-26772.txt', 'wb') as f:
+            f.write(supplementary_dm.content)
 
 
 
@@ -95,6 +111,12 @@ def main(args):
             f.write(subcellular_mm.content)
 
 
+    if not isfile('./data/fly_compartment_knowledge_full.tsv'):
+        subcellular_dm = requests.get('https://download.jensenlab.org/fly_compartment_knowledge_full.tsv', stream=True)
+        with open('./data/fly_compartment_knowledge_full.tsv', 'wb') as f:
+            f.write(subcellular_dm.content)
+
+
 
     if not isfile('./data/degannotation-e.dat'):
         print("Downloading essential genes data")
@@ -108,7 +130,7 @@ def main(args):
             print("Error downloading essential genes data. Server is down.")
 
     if not isfile('./data/deg_sc.dat'):
-        with open ('./data/degannotation-e.dat', 'r') as f:
+        with open ('./data/degannotation-e.dat', 'r', encoding='UTF8') as f:
             with open ('./data/deg_sc.dat', 'w+', encoding='UTF8') as g:
                 f.readline()
                 for line in f:
@@ -130,19 +152,28 @@ def main(args):
 
 
         print("Preparing Homo Sapiens annotations...")
-        with open ('./data/deg_hs.dat', 'w+') as g:
+        with open ('./data/deg_hs.dat', 'w+', encoding='UTF8') as g:
             for key in gene_num_listed:
                 if gene_num_listed[key] > 4:
                     g.write(key + '\n')
     
     if not isfile('./data/deg_mm.dat'):
-        with open ('./data/degannotation-e.dat', 'r') as f:
+        with open ('./data/degannotation-e.dat', 'r', encoding='UTF8') as f:
             with open ('./data/deg_mm.dat', 'w+', encoding='UTF8') as g:
                 f.readline()
                 for line in f:
                     line = line.strip().split('\t')
                     if line[7] == 'Mus musculus':
-                        g.write(line[2] + '\n')     
+                        g.write(line[2] + '\n')
+
+    if not isfile('./data/deg_dm.dat'):
+        with open ('./data/degannotation-e.dat', 'r', encoding='UTF8') as f:
+            with open ('./data/deg_dm.dat', 'w+', encoding='UTF8') as g:
+                f.readline()
+                for line in f:
+                    line = line.strip().split('\t')
+                    if line[7] == 'Drosophila melanogaster':
+                        g.write(line[2] + '\n')    
 
 
 if __name__ == '__main__':
