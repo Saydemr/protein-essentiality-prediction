@@ -22,13 +22,13 @@ def parse_graph(organism, removed_nodes=None):
 
     ppi_graph = nx.Graph()
 
-    id_map = {}
-    id_map_int = {}
-    id_map_inv = {}
+    id_map         = {}
+    id_map_int     = {}
+    id_map_inv     = {}
     id_map_inv_int = {}
-    id_name_dict = {}
+    id_name_dict   = {}
 
-    files = fnmatch.filter(os.listdir('./'), 'BIOGRID-ORGANISM-{}*-4.4.*.tab3.txt'.format(params_dict[organism]['full_name']))
+    files = fnmatch.filter(os.listdir('./'), 'BIOGRID-ORGANISM-{}*.tab3.txt'.format(params_dict[organism]['full_name']))
     if len(files) == 0:
         print("No data available for {}".format(params_dict[organism]['full_name']))
         print("Please run update.py in base directory")
@@ -41,15 +41,15 @@ def parse_graph(organism, removed_nodes=None):
             line = line.strip()
             line = line.split("\t")
 
-            if removed_nodes != None and i in removed_nodes and removed_nodes[i] == int(line[1]):
-                continue
-            
             if line[1] == line[2]:
                 continue
 
             if not line[1].isdigit() or not line[2].isdigit():
                 continue
-
+            
+            if removed_nodes != None and (int(line[1]) in removed_nodes.values() or int(line[2]) in removed_nodes.values()):
+                continue
+            
             id_name_dict[line[1]] = line[7]
             id_name_dict[line[2]] = line[8]
 
@@ -107,7 +107,7 @@ def create_graph(organism):
     print("Organism: {}".format((params_dict[organism]['full_name']).replace('_', ' ')))
     print("Loading graph...")
 
-    ppi_graph, id_map, id_map_int, id_map_inv, id_map_inv_int, id_name_dict = parse_graph(organism)
+    ppi_graph, id_map, _, id_map_inv, id_map_inv_int, id_name_dict = parse_graph(organism)
 
     print("Graph info...")
     print("Number of nodes: ", ppi_graph.number_of_nodes())
@@ -123,8 +123,7 @@ def create_graph(organism):
                 removed_index.update({node : b})
     
     if len(removed_index) > 0:
-        ppi_graph, id_map, id_map_int, id_map_inv, id_map_inv_int, id_name_dict = parse_graph(organism, removed_index)
-    
+        ppi_graph, id_map, _, id_map_inv, id_map_inv_int, id_name_dict = parse_graph(organism, removed_index)
      
     print("Checking the graph if smth is modified.")
     print("Number of nodes: ", ppi_graph.number_of_nodes())
@@ -189,7 +188,6 @@ def create_graph(organism):
                 essential_val_count += 1
 
 
-
     np.save('../grand_blend/{}_y_mat.npy'.format(organism), y_mat)
 
     print('Creating id-map')
@@ -203,9 +201,9 @@ def create_graph(organism):
 
     print("Writing graphs to JSON files...")
 
-    json.dump(class_map, fp=open("../GraphSAGE/example_data/{}-class_map.json".format(organism), "w+"), indent=4)
-    json.dump(sage_id_map, fp=open("../GraphSAGE/example_data/{}-id_map.json".format(organism), "w+"), indent=4)
-    json.dump(json_graph.node_link_data(ppi_graph), fp=open("../GraphSAGE/example_data/{}-G.json".format(organism), "w+"), indent=4)
+    # json.dump(class_map, fp=open("../GraphSAGE/example_data/{}-class_map.json".format(organism), "w+"), indent=4)
+    # json.dump(sage_id_map, fp=open("../GraphSAGE/example_data/{}-id_map.json".format(organism), "w+"), indent=4)
+    # json.dump(json_graph.node_link_data(ppi_graph), fp=open("../GraphSAGE/example_data/{}-G.json".format(organism), "w+"), indent=4)
     
     json.dump(id_map_inv, fp=open("./{}-id_map_inv.json".format(organism), "w+"), indent=4)
     json.dump(sage_id_map, fp=open("./{}-id_map.json".format(organism), "w+"), indent=4)
@@ -240,8 +238,6 @@ def create_graph(organism):
     merge_features(organism)
 
 
-        
-
 def gene_expression(organism):
     id_bioname_dict = json.load(open("./{}-id_name_dict.json".format(organism)))
     nhi2gene = {}
@@ -249,7 +245,7 @@ def gene_expression(organism):
     expression_size = 0
 
     non_zero_count = 0
-    if organism == 'sc':
+    if organism == 'sc' or organism == 'mm' or organism == 'dm':
         with open(params_dict[organism]['map'], 'r') as f:
             for line in f:
                 if line.startswith('#') or line.startswith('ID'):
@@ -282,7 +278,6 @@ def gene_expression(organism):
                             continue
                         g.write(nhi2gene[check] + '\t' + '\t'.join(line[1:]) + '\n')
                         expression_size = len(line) - 1
-
 
     elif organism == 'hs':
         with open(expression_file, 'r') as f:
@@ -323,12 +318,11 @@ def gene_expression(organism):
     ge_matrix = StandardScaler().fit_transform(ge_matrix)
 
     from sklearn.decomposition import PCA
-    pca = PCA(n_components=params_dict[organism]['pca'])
+    pca = PCA(n_components=min(params_dict[organism]['pca'], ge_matrix.shape[1]))
     ge_matrix = pca.fit_transform(ge_matrix)
-    print(ge_matrix.dtype)
 
     np.save('{}-ge_feats.npy'.format(organism), ge_matrix)
-    np.save('../GraphSAGE/example_data/{}-ge_feats.npy'.format(organism), ge_matrix)
+    # np.save('../GraphSAGE/example_data/{}-ge_feats.npy'.format(organism), ge_matrix)
 
 def subcellular_localization(organism):
     locations = ['Nucleus', 'Cytosol', 'Cytoskeleton', 'Peroxisome', 'Vacuole', 'Endoplasmic reticulum', 'Golgi apparatus', 'Plasma membrane', 'Endosome', 'Extracellular space', 'Mitochondrion'] 
@@ -359,7 +353,7 @@ def subcellular_localization(organism):
         f.close()
 
     np.save('{}-sl_feats.npy'.format(organism), sl_matrix)
-    np.save('../GraphSAGE/example_data/{}-sl_feats.npy'.format(organism), sl_matrix)
+    # np.save('../GraphSAGE/example_data/{}-sl_feats.npy'.format(organism), sl_matrix)
 
 def go_annotation(organism):
     annotations = set()
@@ -397,12 +391,11 @@ def go_annotation(organism):
     go_matrix = StandardScaler().fit_transform(go_matrix)
 
     from sklearn.decomposition import PCA
-    pca = PCA(n_components=params_dict[organism]['pca'])
+    pca = PCA(n_components=min(params_dict[organism]['pca'], go_matrix.shape[1]))
     go_matrix = pca.fit_transform(go_matrix)
-    print(go_matrix.dtype)
 
     np.save('{}-go_feats.npy'.format(organism), go_matrix)
-    np.save('../GraphSAGE/example_data/{}-go_feats.npy'.format(organism), go_matrix)
+    # np.save('../GraphSAGE/example_data/{}-go_feats.npy'.format(organism), go_matrix)
 
 
 def rna_seq(organism):
@@ -421,11 +414,11 @@ def merge_features(organism):
     c = StandardScaler().fit_transform(c)
 
     from sklearn.decomposition import PCA
-    pca = PCA(n_components=params_dict[organism]['pca'])
+    pca = PCA(n_components=min(params_dict[organism]['pca'], c.shape[1]))
     c = pca.fit_transform(c)
     
     np.save('{}-feats.npy'.format(organism), c)
-    np.save('../GraphSAGE/example_data/{}-all-feats.npy'.format(organism), c)
+    # np.save('../GraphSAGE/example_data/{}-all-feats.npy'.format(organism), c)
     sp.sparse.save_npz('../grand_blend/{}-feats.npz'.format(organism), sparse.csr_matrix(c))
 
     with open("{}_{}_log.txt".format(organism,timestr), "a+") as f:
@@ -436,7 +429,7 @@ def merge_features(organism):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--organism', type=str, help='Organism name : sc hs', default='sc')
+    parser.add_argument('--organism', type=str, help='Organism name : sc hs mm dm', default='sc')
     args = parser.parse_args()
     opt = vars(args)
 
