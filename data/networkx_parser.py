@@ -337,7 +337,6 @@ def subcellular_localization(organism):
 
     name_index = json.load(open("./{}-name_index.json".format(organism)))
     id_bioname_dict = json.load(open("./{}-id_name_dict.json".format(organism)))
-    print("sl_feature", file=open("{}_{}_log_debug.txt".format(organism,timestr), "w+"))
 
     sl_matrix = np.zeros((len(id_bioname_dict), 11), dtype=np.int8)
     with open(params_dict[organism]['go'], 'r') as f:
