@@ -213,7 +213,6 @@ def create_graph(organism):
     json.dump(name_index, fp=open("./{}-name_index.json".format(organism),"w+"), indent=4)
     
 
-
     print("Logging some numbers...")
     with open("{}_{}_log.txt".format(organism,timestr), "w+") as f:
         f.write("Number of nodes: {}\n".format(ppi_graph.number_of_nodes()))
@@ -235,8 +234,17 @@ def create_graph(organism):
     subcellular_localization(organism)
     go_annotation(organism)
     # rna_seq(organism)
-    merge_features(organism)
+    data = merge_features(organism)
 
+    from pde_input_handler import SparseGraph, save_sparse_graph_to_npz
+
+    # Load the adjacency matrix A, attribute matrix X and labels vector y
+    # A - scipy.sparse.csr_matrix of shape [num_nodes, num_nodes]
+    # X - scipy.sparse.csr_matrix or np.ndarray of shape [num_nodes, num_attributes]
+    # y - np.ndarray of shape [num_nodes]
+
+    mydataset = SparseGraph(adj_matrix=sp.sparse.csr_matrix(np_adj_matrix), attr_matrix=data, labels=y_mat)
+    save_sparse_graph_to_npz("../grand_blend/{}_grand_blend.npz".format(organism), mydataset)
 
 def gene_expression(organism):
     id_bioname_dict = json.load(open("./{}-id_name_dict.json".format(organism)))
@@ -325,11 +333,11 @@ def gene_expression(organism):
     # np.save('../GraphSAGE/example_data/{}-ge_feats.npy'.format(organism), ge_matrix)
 
 def subcellular_localization(organism):
-    locations = ['Nucleus', 'Cytosol', 'Cytoskeleton', 'Peroxisome', 'Vacuole', 'Endoplasmic reticulum', 'Golgi apparatus', 'Plasma membrane', 'Endosome', 'Extracellular space', 'Mitochondrion'] 
+    locations = ['Nucleus', 'Cytosol', 'Cytoskeleton', 'Peroxisome', 'Vacuole', 'Endoplasmic', 'Golgi', 'Plasma', 'Endosome', 'Extracellular', 'Mitochondrion'] 
 
     name_index = json.load(open("./{}-name_index.json".format(organism)))
     id_bioname_dict = json.load(open("./{}-id_name_dict.json".format(organism)))
-    
+    print("sl_feature", file=open("{}_{}_log_debug.txt".format(organism,timestr), "w+"))
 
     sl_matrix = np.zeros((len(id_bioname_dict), 11), dtype=np.int8)
     with open(params_dict[organism]['go'], 'r') as f:
@@ -337,10 +345,12 @@ def subcellular_localization(organism):
             line = line.strip().split('\t')
             name = line[1]
             sl_feature = line[3]
-            if name not in name_index.keys() or sl_feature not in locations:
+            if name not in name_index.keys() or not any([location in sl_feature for location in locations]):
                 continue
+
             index = int(name_index[name])
-            sl_matrix[index, locations.index(sl_feature)] = 1
+            sl_index = [location in sl_feature for location in locations].index(True)
+            sl_matrix[index, sl_index] = 1
 
     sl_non_zero_count = 0
     for line in sl_matrix:
@@ -386,7 +396,6 @@ def go_annotation(organism):
         f.close()
 
 
-
     from sklearn.preprocessing import StandardScaler
     go_matrix = StandardScaler().fit_transform(go_matrix)
 
@@ -419,12 +428,14 @@ def merge_features(organism):
     
     np.save('{}-feats.npy'.format(organism), c)
     # np.save('../GraphSAGE/example_data/{}-all-feats.npy'.format(organism), c)
-    sp.sparse.save_npz('../grand_blend/{}-feats.npz'.format(organism), sparse.csr_matrix(c))
+    data = sp.sparse.save_npz('../grand_blend/{}-feats.npz'.format(organism), sparse.csr_matrix(c))
 
     with open("{}_{}_log.txt".format(organism,timestr), "a+") as f:
         f.write("Shape of the feature matrix: {}\n".format(c.shape))
         f.flush()
         f.close()
+    
+    return data
 
 
 if __name__ == '__main__':
