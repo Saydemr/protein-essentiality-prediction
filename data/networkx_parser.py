@@ -15,7 +15,11 @@ timestr = time.strftime("%d.%m.%Y_%H.%M.%S_%z")
 
 
 def main(opt):
-    create_graph(opt['organism'])
+    if opt['organism'] == "all":
+        for org in ["sc", "mm", "dm", "hs"]:
+            create_graph(org)
+    else:
+        create_graph(opt['organism'])
 
 
 def parse_graph(organism, removed_nodes=None):
@@ -427,19 +431,20 @@ def merge_features(organism):
     
     np.save('{}-feats.npy'.format(organism), c)
     # np.save('../GraphSAGE/example_data/{}-all-feats.npy'.format(organism), c)
-    data = sp.sparse.save_npz('../grand_blend/{}-feats.npz'.format(organism), sparse.csr_matrix(c))
+    csr_data = sparse.csr_matrix(c)
+    sp.sparse.save_npz('../grand_blend/{}-feats.npz'.format(organism), csr_data)
 
     with open("{}_{}_log.txt".format(organism,timestr), "a+") as f:
         f.write("Shape of the feature matrix: {}\n".format(c.shape))
         f.flush()
         f.close()
     
-    return data
+    return csr_data
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--organism', type=str, help='Organism name : sc hs mm dm', default='sc')
+    parser.add_argument('--organism', type=str, help='Organism name: sc hs mm dm all', default='sc')
     args = parser.parse_args()
     opt = vars(args)
 
