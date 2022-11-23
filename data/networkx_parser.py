@@ -326,12 +326,12 @@ def gene_expression(organism):
         f.flush()
         f.close()
     
-    from sklearn.preprocessing import StandardScaler
-    ge_matrix = StandardScaler().fit_transform(ge_matrix)
+    # from sklearn.preprocessing import StandardScaler
+    # ge_matrix = StandardScaler().fit_transform(ge_matrix)
 
-    from sklearn.decomposition import PCA
-    pca = PCA(n_components=min(params_dict[organism]['pca'], ge_matrix.shape[1]))
-    ge_matrix = pca.fit_transform(ge_matrix)
+    # from sklearn.decomposition import PCA
+    # pca = PCA(n_components=min(params_dict[organism]['pca'], ge_matrix.shape[1]))
+    # ge_matrix = pca.fit_transform(ge_matrix)
 
     np.save('{}-ge_feats.npy'.format(organism), ge_matrix)
     # np.save('../GraphSAGE/example_data/{}-ge_feats.npy'.format(organism), ge_matrix)
@@ -399,12 +399,12 @@ def go_annotation(organism):
         f.close()
 
 
-    from sklearn.preprocessing import StandardScaler
-    go_matrix = StandardScaler().fit_transform(go_matrix)
+    # from sklearn.preprocessing import StandardScaler
+    # go_matrix = StandardScaler().fit_transform(go_matrix)
 
-    from sklearn.decomposition import PCA
-    pca = PCA(n_components=min(params_dict[organism]['pca'], go_matrix.shape[1]))
-    go_matrix = pca.fit_transform(go_matrix)
+    # from sklearn.decomposition import PCA
+    # pca = PCA(n_components=min(params_dict[organism]['pca'], go_matrix.shape[1]))
+    # go_matrix = pca.fit_transform(go_matrix)
 
     np.save('{}-go_feats.npy'.format(organism), go_matrix)
     # np.save('../GraphSAGE/example_data/{}-go_feats.npy'.format(organism), go_matrix)
@@ -422,12 +422,12 @@ def merge_features(organism):
 
     c = np.concatenate((a, b, d), axis=1)
 
-    from sklearn.preprocessing import StandardScaler
-    c = StandardScaler().fit_transform(c)
+    # from sklearn.preprocessing import StandardScaler
+    # c = StandardScaler().fit_transform(c)
 
-    from sklearn.decomposition import PCA
-    pca = PCA(n_components=min(params_dict[organism]['pca'], c.shape[1]))
-    c = pca.fit_transform(c)
+    # from sklearn.decomposition import PCA
+    # pca = PCA(n_components=min(params_dict[organism]['pca'], c.shape[1]))
+    # c = pca.fit_transform(c)
     
     np.save('{}-feats.npy'.format(organism), c)
     # np.save('../GraphSAGE/example_data/{}-all-feats.npy'.format(organism), c)
