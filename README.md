@@ -27,7 +27,7 @@ python update.py
 ```
 If you see anything that points to an error, you can download the missing files from [here](https://drive.google.com/drive/folders/1iCOUWxvvAYtPaAUbcvRW-95dP2I64tOd). Downloaded files must be placed under `./data` directory before running the next commands.
 
-Biological data are obtained from [BioGRID](), [COMPARTMENTS](), and [NHI GEO]() databases. Links to obtain files can be found inside the script.
+Biological data are obtained from [BioGRID](https://downloads.thebiogrid.org/BioGRID), [COMPARTMENTS](https://compartments.jensenlab.org/Downloads), and [NHI GEO](https://www.ncbi.nlm.nih.gov/geo/) databases. Links to obtain files can be found inside the [script](update.py).
 
 ### Compile data needed for each GNN
 
@@ -58,4 +58,4 @@ You can find our forks from [here](https://github.com/Saydemr/GraphSAGE) and [he
 - [Abdullah Saydemir](https://github.com/Saydemr)
 
 ### Special Thanks
-- We would like to thank [Esad Simitcioglu](https://github.com/EsadSimitcioglu), [OzU AI Labs](https://ailabs.ozyegin.edu.tr/) and [Dr. Reyhan Aydoğan](https://www.ozyegin.edu.tr/tr/akademik-kadro/reyhanaydogan) for providing on-demand hardware equipment.
+- We would like to thank [Esad Simitcioglu](https://github.com/EsadSimitcioglu), [OzU AI Labs](https://ailabs.ozyegin.edu.tr/) and [Dr. Reyhan Aydoğan](https://www.ozyegin.edu.tr/en/faculty/reyhanaydogan) for providing on-demand hardware equipment.
