@@ -1,18 +1,15 @@
 import networkx as nx
-from networkx.readwrite import json_graph
-from random import choices
 from collections import Counter
 import json
 import numpy as np
 import scipy as sp
+from scipy import sparse
 import argparse
 import os
-from scipy import sparse
 import fnmatch
 from params import params_dict
 import time
 timestr = time.strftime("%d.%m.%Y_%H.%M.%S_%z")
-
 
 def main(opt):
     if opt['organism'] == "all":
@@ -133,10 +130,10 @@ def create_graph(organism):
     print("Number of nodes: ", ppi_graph.number_of_nodes())
     print("Number of connected components", nx.number_connected_components(ppi_graph))
     print("Number of edges: ", ppi_graph.number_of_edges())
-    print()
+
 
     np_adj_matrix = nx.to_numpy_matrix(ppi_graph)
-    sp.sparse.save_npz('../grand_blend/{}_adj_matrix.npz'.format(organism), sp.sparse.csr_matrix(np_adj_matrix))
+    sparse.save_npz('../grand_blend/{}_adj_matrix.npz'.format(organism), sparse.csr_matrix(np_adj_matrix))
 
     with open("{}_ppi_graph.txt".format(organism), "w+") as f:
         for e in ppi_graph.edges():
@@ -151,7 +148,7 @@ def create_graph(organism):
             essential_dict.add(line[0])
 
     class_map = {}
-    y_mat = np.zeros(ppi_graph.number_of_nodes(), dtype=np.int8)
+    labels = np.zeros(ppi_graph.number_of_nodes(), dtype=np.int8)
 
     essential_count = 0
     for i in id_map:
@@ -159,42 +156,14 @@ def create_graph(organism):
         my_str = id_name_dict[i]
         if my_str in essential_dict:
             class_map[my_key] = 1
-            y_mat[my_key] = 1
+            labels[my_key] = 1
             essential_count += 1
         else:
             class_map[my_key] = 0
 
 
-    population = [0, 1, 2]
-    weights = [0.8, 0.1, 0.1]
-    distribution_samples = choices(population, weights, k=ppi_graph.number_of_nodes())
-    
-    essential_train_count = 0
-    essential_test_count  = 0
-    essential_val_count = 0
+    np.save('./{}-labels.npy'.format(organism), labels)
 
-    for i, node in enumerate(ppi_graph.nodes):
-        if distribution_samples[i] == 0:
-            ppi_graph.nodes[node]['test'] = False
-            ppi_graph.nodes[node]['val'] = False
-            if class_map[node] == 1:
-                essential_train_count += 1
-
-        elif distribution_samples[i] == 1:
-            ppi_graph.nodes[node]['test'] = True
-            ppi_graph.nodes[node]['val'] = False
-            if class_map[node] == 1:
-                essential_test_count += 1
-        else:
-            ppi_graph.nodes[node]['test'] = False
-            ppi_graph.nodes[node]['val'] = True
-            if class_map[node] == 1:
-                essential_val_count += 1
-
-
-    np.save('../grand_blend/{}_y_mat.npy'.format(organism), y_mat)
-
-    print('Creating id-map')
     sage_id_map = {}
     max_deg = -1
     for index, node in enumerate(ppi_graph.nodes):
@@ -203,11 +172,8 @@ def create_graph(organism):
             max_deg = ppi_graph.degree(node)
 
 
-    print("Writing graphs to JSON files...")
+    node_names = np.asarray([k for k in id_name_dict.values()])
 
-    # json.dump(class_map, fp=open("../GraphSAGE/example_data/{}-class_map.json".format(organism), "w+"), indent=4)
-    # json.dump(sage_id_map, fp=open("../GraphSAGE/example_data/{}-id_map.json".format(organism), "w+"), indent=4)
-    # json.dump(json_graph.node_link_data(ppi_graph), fp=open("../GraphSAGE/example_data/{}-G.json".format(organism), "w+"), indent=4)
     
     json.dump(id_map_inv, fp=open("./{}-id_map_inv.json".format(organism), "w+"), indent=4)
     json.dump(sage_id_map, fp=open("./{}-id_map.json".format(organism), "w+"), indent=4)
@@ -223,32 +189,23 @@ def create_graph(organism):
         f.write("Number of edges: {}\n".format(ppi_graph.number_of_edges()))
         f.write("Number of connected components: {}\n".format(nx.number_connected_components(ppi_graph)))
         f.write("Number of essential genes: {}\n".format(essential_count))
-        f.write("Number of essential genes in training set (GraphSAGE): {}\n".format(essential_train_count))
-        f.write("Number of essential genes in validation set (GraphSAGE): {}\n".format(essential_val_count))
-        f.write("Number of essential genes in test set (GraphSAGE): {}\n".format(essential_test_count))
-        f.write("Number of instances in training (0), test (1) and validation (2)\n")
-        f.write(str(Counter(distribution_samples)) + "\n")
         f.write("Max degree : {}\n".format(max_deg))
         f.flush()
         f.close()
 
 
     print("Creating the feature matrix...")
-    gene_expression(organism)
-    subcellular_localization(organism)
-    go_annotation(organism)
+    _, ge_names = gene_expression(organism)
+    _, sl_names = subcellular_localization(organism)
+    _, go_names = go_annotation(organism)
     # rna_seq(organism)
     data = merge_features(organism)
 
+    attr_names = np.concatenate((sl_names,ge_names,go_names))
+
     from pde_input_handler import SparseGraph, save_sparse_graph_to_npz
-
-    # Load the adjacency matrix A, attribute matrix X and labels vector y
-    # A - scipy.sparse.csr_matrix of shape [num_nodes, num_nodes]
-    # X - scipy.sparse.csr_matrix or np.ndarray of shape [num_nodes, num_attributes]
-    # y - np.ndarray of shape [num_nodes]
-
-    mydataset = SparseGraph(adj_matrix=sp.sparse.csr_matrix(np_adj_matrix), attr_matrix=data, labels=y_mat)
-    save_sparse_graph_to_npz("../grand_blend/{}_grand_blend.npz".format(organism), mydataset)
+    mydataset = SparseGraph(adj_matrix=sp.sparse.csr_matrix(np_adj_matrix), attr_matrix=data, labels=labels, node_names=node_names, attr_names=attr_names)
+    save_sparse_graph_to_npz("./{}-data.npz".format(organism), mydataset)
 
 def gene_expression(organism):
     id_bioname_dict = json.load(open("./{}-id_name_dict.json".format(organism)))
@@ -326,15 +283,9 @@ def gene_expression(organism):
         f.flush()
         f.close()
     
-    # from sklearn.preprocessing import StandardScaler
-    # ge_matrix = StandardScaler().fit_transform(ge_matrix)
-
-    # from sklearn.decomposition import PCA
-    # pca = PCA(n_components=min(params_dict[organism]['pca'], ge_matrix.shape[1]))
-    # ge_matrix = pca.fit_transform(ge_matrix)
-
     np.save('{}-ge_feats.npy'.format(organism), ge_matrix)
     # np.save('../GraphSAGE/example_data/{}-ge_feats.npy'.format(organism), ge_matrix)
+    return ge_matrix, ["ge_" + str(i) for i in range(ge_matrix.shape[1])]
 
 def subcellular_localization(organism):
     locations = ['Nucleus', 'Cytosol', 'Cytoskeleton', 'Peroxisome', 'Vacuole', 'Endoplasmic', 'Golgi', 'Plasma', 'Endosome', 'Extracellular', 'Mitochondrion'] 
@@ -353,7 +304,7 @@ def subcellular_localization(organism):
 
             index = int(name_index[name])
             sl_index = [location in sl_feature for location in locations].index(True)
-            sl_matrix[index, sl_index] = 1
+            sl_matrix[index, sl_index] += 1
 
     sl_non_zero_count = 0
     for line in sl_matrix:
@@ -366,7 +317,7 @@ def subcellular_localization(organism):
         f.close()
 
     np.save('{}-sl_feats.npy'.format(organism), sl_matrix)
-    # np.save('../GraphSAGE/example_data/{}-sl_feats.npy'.format(organism), sl_matrix)
+    return sl_matrix, ["sl_" + location for location in locations]
 
 def go_annotation(organism):
     annotations = set()
@@ -386,7 +337,7 @@ def go_annotation(organism):
             gene = line[1]
             annotation = line[2]
             if gene in id_bioname_dict.values():
-                go_matrix[int(name_index[gene]), annotations.index(annotation)] = 1
+                go_matrix[int(name_index[gene]), annotations.index(annotation)] += 1
 
     go_non_zero_count = 0
     for line in go_matrix:
@@ -399,47 +350,18 @@ def go_annotation(organism):
         f.close()
 
 
-    # from sklearn.preprocessing import StandardScaler
-    # go_matrix = StandardScaler().fit_transform(go_matrix)
-
-    # from sklearn.decomposition import PCA
-    # pca = PCA(n_components=min(params_dict[organism]['pca'], go_matrix.shape[1]))
-    # go_matrix = pca.fit_transform(go_matrix)
-
     np.save('{}-go_feats.npy'.format(organism), go_matrix)
-    # np.save('../GraphSAGE/example_data/{}-go_feats.npy'.format(organism), go_matrix)
-
-
-def rna_seq(organism):
-    # TODO
-    pass
-
+    return go_matrix, ["go_" + annotation for annotation in annotations]
 
 def merge_features(organism):
-    b = np.load('{}-ge_feats.npy'.format(organism), allow_pickle=True, fix_imports=True, encoding='latin1')
-    a = np.load('{}-sl_feats.npy'.format(organism), allow_pickle=True, fix_imports=True, encoding='latin1')
-    d = np.load('{}-go_feats.npy'.format(organism), allow_pickle=True, fix_imports=True, encoding='latin1')
+    sl = np.load('{}-sl_feats.npy'.format(organism), allow_pickle=True, fix_imports=True, encoding='latin1')
+    ge = np.load('{}-ge_feats.npy'.format(organism), allow_pickle=True, fix_imports=True, encoding='latin1')
+    if organism == "mm":
+        ge = ge.astype(np.int32)
+    go = np.load('{}-go_feats.npy'.format(organism), allow_pickle=True, fix_imports=True, encoding='latin1')
+    data = np.concatenate((sl,ge,go), axis=1)
 
-    c = np.concatenate((a, b, d), axis=1)
-
-    # from sklearn.preprocessing import StandardScaler
-    # c = StandardScaler().fit_transform(c)
-
-    # from sklearn.decomposition import PCA
-    # pca = PCA(n_components=min(params_dict[organism]['pca'], c.shape[1]))
-    # c = pca.fit_transform(c)
-    
-    np.save('{}-feats.npy'.format(organism), c)
-    # np.save('../GraphSAGE/example_data/{}-all-feats.npy'.format(organism), c)
-    csr_data = sparse.csr_matrix(c)
-    sp.sparse.save_npz('../grand_blend/{}-feats.npz'.format(organism), csr_data)
-
-    with open("{}_{}_log.txt".format(organism,timestr), "a+") as f:
-        f.write("Shape of the feature matrix: {}\n".format(c.shape))
-        f.flush()
-        f.close()
-    
-    return csr_data
+    return data
 
 
 if __name__ == '__main__':

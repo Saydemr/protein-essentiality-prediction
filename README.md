@@ -33,12 +33,14 @@ Biological data are obtained from [BioGRID](https://downloads.thebiogrid.org/Bio
 
 Preprocessor takes organism name as an argument. It compiles necessary information for the given organism and saves it under `./data` directory. If you want to create data for all organisms, you can run the following command.
 ```
-cd ./data && python networkx_parser.py --organism all
+cd ./data
+python compose_data.py --organism all
 ```
 
 If you want to create data for a specific organism, you can run the following command.
 ```
-cd ./data && python networkx_parser.py --organism sc
+cd ./data
+python compose_data.py --organism sc
 ```
 
 Outputs to be used in each GNN will be placed under respective directories.
@@ -46,7 +48,7 @@ Outputs to be used in each GNN will be placed under respective directories.
 ### Run GNNs to get results.
 For now, refer to the GitHub pages of the each GNN. This part will be updated after the automated pipeline is considered ready.
 We forked said GNNs to integrate some necessary features missing in the original repositories.
-You can find our forks from [here](https://github.com/Saydemr/GraphSAGE) and [here](https://github.com/Saydemr/pde).
+<!-- You can find our forks from [here](https://github.com/Saydemr/GraphSAGE) and [here](https://github.com/Saydemr/pde). -->
 
 
 ## Project Information
