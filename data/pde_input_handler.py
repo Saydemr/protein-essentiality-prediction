@@ -74,7 +74,7 @@ def save_sparse_graph_to_npz(filepath, sparse_graph):
     if not filepath.endswith('.npz'):
         filepath += '.npz'
 
-    np.savez(filepath, **data_dict)
+    np.savez(filepath, **data_dict, args={"allow_pickle": False})
 
 
 def to_binary_bag_of_words(features):

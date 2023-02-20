@@ -133,7 +133,6 @@ def create_graph(organism):
 
 
     np_adj_matrix = nx.to_numpy_matrix(ppi_graph)
-    sparse.save_npz('../grand_blend/{}_adj_matrix.npz'.format(organism), sparse.csr_matrix(np_adj_matrix))
 
     with open("{}_ppi_graph.txt".format(organism), "w+") as f:
         for e in ppi_graph.edges():
@@ -162,7 +161,7 @@ def create_graph(organism):
             class_map[my_key] = 0
 
 
-    np.save('./{}-labels.npy'.format(organism), labels)
+    np.save('./{}-labels.npy'.format(organism), labels, allow_pickle=False)
 
     sage_id_map = {}
     max_deg = -1
@@ -200,6 +199,9 @@ def create_graph(organism):
     _, go_names = go_annotation(organism)
     # rna_seq(organism)
     data = merge_features(organism)
+    
+    # cast data to sparse matrix
+    data = sparse.csr_matrix(data)
 
     attr_names = np.concatenate((sl_names,ge_names,go_names))
 
@@ -283,7 +285,7 @@ def gene_expression(organism):
         f.flush()
         f.close()
     
-    np.save('{}-ge_feats.npy'.format(organism), ge_matrix)
+    np.save('{}-ge_feats.npy'.format(organism), ge_matrix, allow_pickle=False)
     # np.save('../GraphSAGE/example_data/{}-ge_feats.npy'.format(organism), ge_matrix)
     return ge_matrix, ["ge_" + str(i) for i in range(ge_matrix.shape[1])]
 
@@ -316,7 +318,7 @@ def subcellular_localization(organism):
         f.flush()
         f.close()
 
-    np.save('{}-sl_feats.npy'.format(organism), sl_matrix)
+    np.save('{}-sl_feats.npy'.format(organism), sl_matrix, allow_pickle=False)
     return sl_matrix, ["sl_" + location for location in locations]
 
 def go_annotation(organism):
@@ -350,15 +352,15 @@ def go_annotation(organism):
         f.close()
 
 
-    np.save('{}-go_feats.npy'.format(organism), go_matrix)
+    np.save('{}-go_feats.npy'.format(organism), go_matrix, allow_pickle=False)
     return go_matrix, ["go_" + annotation for annotation in annotations]
 
 def merge_features(organism):
-    sl = np.load('{}-sl_feats.npy'.format(organism), allow_pickle=True, fix_imports=True, encoding='latin1')
-    ge = np.load('{}-ge_feats.npy'.format(organism), allow_pickle=True, fix_imports=True, encoding='latin1')
+    sl = np.load('{}-sl_feats.npy'.format(organism))
+    ge = np.load('{}-ge_feats.npy'.format(organism))
     if organism == "mm":
         ge = ge.astype(np.int32)
-    go = np.load('{}-go_feats.npy'.format(organism), allow_pickle=True, fix_imports=True, encoding='latin1')
+    go = np.load('{}-go_feats.npy'.format(organism))
     data = np.concatenate((sl,ge,go), axis=1)
 
     return data
