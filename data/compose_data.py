@@ -116,6 +116,34 @@ def create_graph(organism):
     print("Number of edges: ", ppi_graph.number_of_edges())
     print()
 
+    json.dump(id_map_inv, fp=open("./{}-id_map_inv.json".format(organism), "w+"), indent=4)
+    json.dump(sage_id_map, fp=open("./{}-id_map.json".format(organism), "w+"), indent=4)
+    json.dump(id_name_dict, fp=open("./{}-id_name_dict.json".format(organism), "w+"), indent=4)
+    
+    name_index = {id_name_dict[str(id_map_inv[v])] : sage_id_map[v]  for v in id_map_inv.keys()}
+    json.dump(name_index, fp=open("./{}-name_index.json".format(organism),"w+"), indent=4)
+
+    print("Creating the feature matrix...")
+    _, ge_names = gene_expression(organism)
+    _, sl_names = subcellular_localization(organism)
+    _, go_names = go_annotation(organism)
+    # rna_seq(organism)
+    data = merge_features(organism)
+    
+    # cast data to sparse matrix
+    data = sparse.csr_matrix(data)
+
+    # find the row indices that have all zeros
+    zero_row_indices = np.where(~data.any(axis=1))[0]
+
+    # find the node ids that correspond to the zero rows
+    zero_node_ids = [id_map_inv_int[i] for i in zero_row_indices]
+
+    # parse the graph again, this time removing the zero rows
+    # ppi_graph, id_map, _, id_map_inv, id_map_inv_int, id_name_dict = parse_graph(organism, zero_node_ids)
+
+
+    # id map inv int  e.g. 0 : 7266
     removed_index = {}
     for component in list(nx.connected_components(ppi_graph)):
         if len(component) < 10:
@@ -139,14 +167,13 @@ def create_graph(organism):
             a, b = e
             f.write(str(id_map_inv_int[a]) + " " + str(id_map_inv_int[b]) + "\n")
 
-    print("Creating class-map")
+
     essential_dict = set()
     with open('deg_{}.dat'.format(organism)) as f:
         for line in f:
             line = line.strip().split('\t')
             essential_dict.add(line[0])
 
-    class_map = {}
     labels = np.zeros(ppi_graph.number_of_nodes(), dtype=np.int8)
 
     essential_count = 0
@@ -154,12 +181,8 @@ def create_graph(organism):
         my_key = id_map[i]
         my_str = id_name_dict[i]
         if my_str in essential_dict:
-            class_map[my_key] = 1
             labels[my_key] = 1
             essential_count += 1
-        else:
-            class_map[my_key] = 0
-
 
     np.save('./{}-labels.npy'.format(organism), labels, allow_pickle=False)
 
@@ -170,17 +193,7 @@ def create_graph(organism):
         if ppi_graph.degree(node) > max_deg:
             max_deg = ppi_graph.degree(node)
 
-
     node_names = np.asarray([k for k in id_name_dict.values()])
-
-    
-    json.dump(id_map_inv, fp=open("./{}-id_map_inv.json".format(organism), "w+"), indent=4)
-    json.dump(sage_id_map, fp=open("./{}-id_map.json".format(organism), "w+"), indent=4)
-    json.dump(id_name_dict, fp=open("./{}-id_name_dict.json".format(organism), "w+"), indent=4)
-    
-    name_index = {id_name_dict[str(id_map_inv[v])] : sage_id_map[v]  for v in id_map_inv.keys()}
-    json.dump(name_index, fp=open("./{}-name_index.json".format(organism),"w+"), indent=4)
-    
 
     print("Logging some numbers...")
     with open("{}_{}_log.txt".format(organism,timestr), "w+") as f:
@@ -191,17 +204,6 @@ def create_graph(organism):
         f.write("Max degree : {}\n".format(max_deg))
         f.flush()
         f.close()
-
-
-    print("Creating the feature matrix...")
-    _, ge_names = gene_expression(organism)
-    _, sl_names = subcellular_localization(organism)
-    _, go_names = go_annotation(organism)
-    # rna_seq(organism)
-    data = merge_features(organism)
-    
-    # cast data to sparse matrix
-    data = sparse.csr_matrix(data)
 
     attr_names = np.concatenate((sl_names,ge_names,go_names))
 
