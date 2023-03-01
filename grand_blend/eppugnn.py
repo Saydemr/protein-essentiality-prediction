@@ -12,7 +12,7 @@ from torch_geometric.io import read_npz
 
 
 class Eppugnn(InMemoryDataset):
-    url = 'https://github.com/Saydemr/EPPuGNN/raw/homology/data/'
+    url = 'https://github.com/Saydemr/EPPuGNN/raw/main/data/'
     splits_url = 'https://github.com/Saydemr/EPPuGNN/raw/main/splits/'
 
     def __init__(self, root: str, name: str,
