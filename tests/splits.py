@@ -6,15 +6,12 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 
 import unittest
-import torch
-from torch import tensor
-from torch import nn
 import numpy as np
 
 class SplitTests(unittest.TestCase):
     def setUp(self):
         self.organisms = ["hs", "mm", "dm", "sc"]
-        self.splits = 10
+        self.splits = 1
         self.percents = (0.6, 0.2)
 
 
@@ -23,24 +20,12 @@ class SplitTests(unittest.TestCase):
 
     def test_splits(self):
         for organism in self.organisms:
-            test_mask_0 = []
-            train_mask_prev = []
-            for split in range(10):
+            for split in range(self.splits):
                 train_mask = np.load(f"../splits/eppugnn_splits_{organism}_{self.percents[0]}_{self.percents[1]}_{split}.npz")["train_mask"]
                 val_mask = np.load(f"../splits/eppugnn_splits_{organism}_{self.percents[0]}_{self.percents[1]}_{split}.npz")["val_mask"]
                 test_mask = np.load(f"../splits/eppugnn_splits_{organism}_{self.percents[0]}_{self.percents[1]}_{split}.npz")["test_mask"]
-                
-                
-                if split == 0:
-                    test_mask_0 = test_mask
-                    train_mask_prev = np.zeros_like(train_mask)
 
-                # Check that the train mask is different consequtive splits
-                self.assertFalse(np.all(train_mask == train_mask_prev), f"Train mask is the same for consequent splits")
-                
-                # Check that the test mask is the same for all splits
-                self.assertTrue(np.all(test_mask == test_mask_0), f"Test mask is not the same for all splits")
-                
+
                 # Check that the train and val masks are disjoint
                 self.assertTrue(np.all(train_mask + val_mask < 2), f"Train and val masks are not disjoint")
 

@@ -32,7 +32,7 @@ def parse_graph(organism, removed_nodes=None):
     files = fnmatch.filter(os.listdir('./'), 'BIOGRID-ORGANISM-{}*.tab3.txt'.format(params_dict[organism]['full_name']))
     if len(files) == 0:
         print("No data available for {}".format(params_dict[organism]['full_name']))
-        print("Please run update.py in base directory")
+        print("Run init.py in base directory")
         exit()
 
     with open(files[0]) as f:
@@ -48,7 +48,7 @@ def parse_graph(organism, removed_nodes=None):
             if not line[1].isdigit() or not line[2].isdigit():
                 continue
             
-            if removed_nodes != None and (int(line[1]) in removed_nodes.values() or int(line[2]) in removed_nodes.values()):
+            if removed_nodes != None and (int(line[1]) in removed_nodes or int(line[2]) in removed_nodes):
                 continue
             
             id_name_dict[line[1]] = line[7]
@@ -105,109 +105,111 @@ def create_graph(organism):
     """
     Create a networkx graph from the BIOGRID data
     """
-    print("Organism: {}".format((params_dict[organism]['full_name']).replace('_', ' ')))
-    print("Loading graph...")
 
+    print("Preparing data for {}".format(params_dict[organism]['full_name']))
+    # Parse the graph the first time to get the ids and names of the nodes
     ppi_graph, id_map, _, id_map_inv, id_map_inv_int, id_name_dict = parse_graph(organism)
+    print("Initial # nodes: ", ppi_graph.number_of_nodes())
+    print("Initial # connected components", nx.number_connected_components(ppi_graph))
+    print("Initial # edges: ", ppi_graph.number_of_edges())
 
-    print("Graph info...")
-    print("Number of nodes: ", ppi_graph.number_of_nodes())
-    print("Number of connected components", nx.number_connected_components(ppi_graph))
-    print("Number of edges: ", ppi_graph.number_of_edges())
-    print()
+    name_index = {id_name_dict[str(id_map_inv[v])] : v  for v in id_map_inv.keys()}
+    json.dump(id_map_inv, fp=open("./{}-id_map_inv.json".format(organism), "w+"), indent=4)
+    json.dump(id_name_dict, fp=open("./{}-id_name_dict.json".format(organism), "w+"), indent=4)
+    json.dump(name_index, fp=open("./{}-name_index.json".format(organism),"w+"), indent=4)
 
+    # Create the feature matrices based on the initial graph
+    _, ge_names = gene_expression(organism)
+    _, sl_names = subcellular_localization(organism)
+    _, go_names = go_annotation(organism)
+    data = merge_features(organism)
+
+    # Remove the nodes that have no features
+    zero_row_indices = np.where(~data.any(axis=1))[0]
+    removed_nodes = set([id_map_inv_int[i] for i in zero_row_indices])
+
+    # parse the graph again to remove the nodes with no features
+    ppi_graph, id_map, _, id_map_inv, id_map_inv_int, id_name_dict = parse_graph(organism, removed_nodes)
+    print("Removed {} nodes that do not have features".format(data.shape[0] - ppi_graph.number_of_nodes()))
+
+
+    # Remove detached nodes
     removed_index = {}
     for component in list(nx.connected_components(ppi_graph)):
-        if len(component) < 10:
+        if len(component) < 50:
             for node in component:
                 b = id_map_inv_int.pop(node)
                 removed_index.update({node : b})
-    
+
+    for i in removed_index.values():
+        removed_nodes.add(i)
+
     if len(removed_index) > 0:
-        ppi_graph, id_map, _, id_map_inv, id_map_inv_int, id_name_dict = parse_graph(organism, removed_index)
-     
-    print("Checking the graph if smth is modified.")
-    print("Number of nodes: ", ppi_graph.number_of_nodes())
-    print("Number of connected components", nx.number_connected_components(ppi_graph))
-    print("Number of edges: ", ppi_graph.number_of_edges())
+        ppi_graph, id_map, _, id_map_inv, id_map_inv_int, id_name_dict = parse_graph(organism, removed_nodes)
+
+    print("Removed {} nodes that are not connected to the rest of the graph".format(len(removed_index)))
+
+    name_index = {id_name_dict[str(id_map_inv[v])] : v  for v in id_map_inv.keys()}
+    json.dump(id_map_inv, fp=open("./{}-id_map_inv.json".format(organism), "w+"), indent=4)
+    json.dump(id_name_dict, fp=open("./{}-id_name_dict.json".format(organism), "w+"), indent=4)
+    json.dump(name_index, fp=open("./{}-name_index.json".format(organism),"w+"), indent=4)
 
 
-    np_adj_matrix = nx.to_numpy_matrix(ppi_graph)
+    # Create the feature matrices based on the final graph
+    _, ge_names = gene_expression(organism)
+    _, sl_names = subcellular_localization(organism)
+    _, go_names = go_annotation(organism)
+    data = merge_features(organism)
 
-    with open("{}_ppi_graph.txt".format(organism), "w+") as f:
-        for e in ppi_graph.edges():
-            a, b = e
-            f.write(str(id_map_inv_int[a]) + " " + str(id_map_inv_int[b]) + "\n")
 
-    print("Creating class-map")
+    # Create the labels
     essential_dict = set()
     with open('deg_{}.dat'.format(organism)) as f:
         for line in f:
             line = line.strip().split('\t')
             essential_dict.add(line[0])
 
-    class_map = {}
     labels = np.zeros(ppi_graph.number_of_nodes(), dtype=np.int8)
-
     essential_count = 0
     for i in id_map:
         my_key = id_map[i]
         my_str = id_name_dict[i]
         if my_str in essential_dict:
-            class_map[my_key] = 1
             labels[my_key] = 1
             essential_count += 1
-        else:
-            class_map[my_key] = 0
-
-
     np.save('./{}-labels.npy'.format(organism), labels, allow_pickle=False)
 
-    sage_id_map = {}
-    max_deg = -1
-    for index, node in enumerate(ppi_graph.nodes):
-        sage_id_map[node] = int(index)
-        if ppi_graph.degree(node) > max_deg:
-            max_deg = ppi_graph.degree(node)
+    # add self loops to the graph
+    ppi_graph = ppi_graph.to_undirected()
+    ppi_graph.add_edges_from([(n, n) for n in ppi_graph.nodes()])
 
-
+    # Save the graph
+    from pde_input_handler import SparseGraph, save_sparse_graph_to_npz
+    data = sparse.csr_matrix(data)
+    attr_names = np.concatenate((sl_names,ge_names,go_names))
     node_names = np.asarray([k for k in id_name_dict.values()])
+    np_adj_matrix = nx.to_numpy_matrix(ppi_graph)
+    mydataset = SparseGraph(adj_matrix=sp.sparse.csr_matrix(np_adj_matrix), attr_matrix=data, labels=labels, node_names=node_names, attr_names=attr_names)
+    save_sparse_graph_to_npz("./{}-data.npz".format(organism), mydataset)
 
-    
-    json.dump(id_map_inv, fp=open("./{}-id_map_inv.json".format(organism), "w+"), indent=4)
-    json.dump(sage_id_map, fp=open("./{}-id_map.json".format(organism), "w+"), indent=4)
-    json.dump(id_name_dict, fp=open("./{}-id_name_dict.json".format(organism), "w+"), indent=4)
-    
-    name_index = {id_name_dict[str(id_map_inv[v])] : sage_id_map[v]  for v in id_map_inv.keys()}
-    json.dump(name_index, fp=open("./{}-name_index.json".format(organism),"w+"), indent=4)
-    
 
-    print("Logging some numbers...")
+    # Done with the graph, now we can log some stats
+
     with open("{}_{}_log.txt".format(organism,timestr), "w+") as f:
+        print("Final # nodes: ", ppi_graph.number_of_nodes())
+        print("Final # connected components", nx.number_connected_components(ppi_graph))
+        print("Final # edges: ", ppi_graph.number_of_edges())
+        print("Final # essential genes: ", essential_count)
+        print("Logging...")
+        print("Done!")
+        print()
+        
         f.write("Number of nodes: {}\n".format(ppi_graph.number_of_nodes()))
         f.write("Number of edges: {}\n".format(ppi_graph.number_of_edges()))
         f.write("Number of connected components: {}\n".format(nx.number_connected_components(ppi_graph)))
         f.write("Number of essential genes: {}\n".format(essential_count))
-        f.write("Max degree : {}\n".format(max_deg))
         f.flush()
         f.close()
-
-
-    print("Creating the feature matrix...")
-    _, ge_names = gene_expression(organism)
-    _, sl_names = subcellular_localization(organism)
-    _, go_names = go_annotation(organism)
-    # rna_seq(organism)
-    data = merge_features(organism)
-    
-    # cast data to sparse matrix
-    data = sparse.csr_matrix(data)
-
-    attr_names = np.concatenate((sl_names,ge_names,go_names))
-
-    from pde_input_handler import SparseGraph, save_sparse_graph_to_npz
-    mydataset = SparseGraph(adj_matrix=sp.sparse.csr_matrix(np_adj_matrix), attr_matrix=data, labels=labels, node_names=node_names, attr_names=attr_names)
-    save_sparse_graph_to_npz("./{}-data.npz".format(organism), mydataset)
 
 def gene_expression(organism):
     id_bioname_dict = json.load(open("./{}-id_name_dict.json".format(organism)))
