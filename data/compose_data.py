@@ -183,7 +183,7 @@ def create_graph(organism):
     ppi_graph = ppi_graph.to_undirected()
     ppi_graph.add_edges_from([(n, n) for n in ppi_graph.nodes()])
 
-    # Save the graph
+    # Save the graph in multiple formats
     from pde_input_handler import SparseGraph, save_sparse_graph_to_npz
     data = sparse.csr_matrix(data)
     attr_names = np.concatenate((sl_names,ge_names,go_names))
@@ -192,6 +192,15 @@ def create_graph(organism):
     mydataset = SparseGraph(adj_matrix=sp.sparse.csr_matrix(np_adj_matrix), attr_matrix=data, labels=labels, node_names=node_names, attr_names=attr_names)
     save_sparse_graph_to_npz("./{}-data.npz".format(organism), mydataset)
 
+    # For centrality methods, actually not needed, edges can be
+    # obtained with data.edge_index
+    with open("{}_ppi_graph.csv".format(organism), "w+") as f:
+        f.write("BioGRID ID Interactor A\tBioGRID ID Interactor B\n")
+        f.flush()
+        for e in ppi_graph.edges():
+            a, b = e
+            f.write(str(id_map_inv_int[a]) + "\t" + str(id_map_inv_int[b]) + "\n")
+        f.flush()
 
     # Done with the graph, now we can log some stats
 
