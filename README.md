@@ -12,13 +12,27 @@ This is the repository of a senior project titled **E**ssential **P**rotein **P*
 
 ### Clone the repository
 ```
-git clone --depth 1 https://github.com/Saydemr/EPPuGNN.git
+git clone https://github.com/Saydemr/EPPuGNN.git
 ```
 
 ### Create Environment
 ```
 conda env create -f environment.yml
 conda activate eppugnn
+```
+
+This might fail with the error saying `pip` could not find torch version with `1.11.0+cu113`. Then, remove all the lines below from `environment.yml` and install them manually with `pip`.
+
+```
+- pykeops==2.1
+- ogb==1.2.1
+- torch==1.11.0+cu113
+- torch-cluster==1.6.0
+- torch-geometric==2.0.3
+- torch-scatter==2.0.9
+- torch-sparse==0.6.13
+- torch-spline-conv==1.2.1
+- torchdiffeq==0.2.3
 ```
 
 ### Download requirements and latest biological data
