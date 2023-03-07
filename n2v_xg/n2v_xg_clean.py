@@ -40,7 +40,7 @@ from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
 new_matrix = scaler.fit_transform(new_matrix)
 
-# do PCA
+# dim reduction
 from sklearn.decomposition import PCA
 pca = PCA(n_components=64)
 new_matrix = pca.fit_transform(new_matrix)
