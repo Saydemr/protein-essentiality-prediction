@@ -81,10 +81,6 @@ class Eppugnn(InMemoryDataset):
             data.train_mask = torch.tensor(split['train_mask']).to(torch.bool)
             data.val_mask = torch.tensor(split['val_mask']).to(torch.bool)
             data.test_mask = torch.tensor(split['test_mask']).to(torch.bool)
-            print("Split loaded")
-            print("Train: ", data.train_mask.sum().item())
-            print("Val: ", data.val_mask.sum().item())
-            print("Test: ", data.test_mask.sum().item())
 
         data = data if self.pre_transform is None else self.pre_transform(data)
         torch.save(self.collate([data]), self.processed_paths[0])

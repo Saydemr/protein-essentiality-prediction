@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import sys
 import copy
+import json
 sys.path.append("../data")
 import eppugnn
 
@@ -52,8 +53,35 @@ test_data = data.x[data.test_mask]
 test_labels = data.y[data.test_mask]
 
 import networkx as nx
-ppi_graph = nx.from_edgelist(data.edge_index.T.numpy())
+from networkx.readwrite import json_graph
+inv_map = json.load(open('../data/{}-id_map_inv.json'.format(org)))
+id_map = {v : k for k,v in inv_map.items()}
+ppi_graph = nx.Graph()
+for x,y in data.edge_index.T.numpy():
+    ppi_graph.add_edge(int(x),int(y))
+
+for i in range(ppi_graph.number_of_nodes()):
+    if data.train_mask[i]:
+        ppi_graph.nodes[i]['test'] = False
+        ppi_graph.nodes[i]['val'] = False
+    elif data.val_mask[i]:
+        ppi_graph.nodes[i]['test'] = False
+        ppi_graph.nodes[i]['val'] = True
+    else:
+        ppi_graph.nodes[i]['test'] = True
+        ppi_graph.nodes[i]['val'] = False
+
+class_map = {}
+labels = np.concatenate((train_labels, val_labels, test_labels))
+for idx, label in enumerate(labels):
+    class_map.update({str(idx) : int(label)})
+
+sage_id = {}
+for i in range(ppi_graph.number_of_nodes()):
+    sage_id.update({str(i) : int(i)})
 
 
-for node in list(ppi_graph.nodes):
-    print(node)
+json.dump(json_graph.node_link_data(ppi_graph), open('{}-G.json'.format(org), 'w+'), indent=4)
+json.dump(sage_id,                              open('{}-id_map.json'.format(org), 'w+'), indent=4)
+json.dump(class_map,                            open('{}-class_map.json'.format(org), 'w+'), indent=4)
+np.save('{}-feats.npy'.format(org), np.concatenate((train_data, val_data, test_data), axis=0))
