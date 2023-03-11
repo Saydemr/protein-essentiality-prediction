@@ -35,22 +35,23 @@ for i in range(len(ids)):
 # concatanate the features to the emb matrix
 new_matrix = np.concatenate((new_matrix, features), axis=1)
 
-# normalize the matrix
-from sklearn.preprocessing import StandardScaler
-scaler = StandardScaler()
-new_matrix = scaler.fit_transform(new_matrix)
-
-# dim reduction
-from sklearn.decomposition import PCA
-pca = PCA(n_components=64)
-new_matrix = pca.fit_transform(new_matrix)
-
-
 # load splits
 split = np.load('../splits/eppugnn_splits_{}_0.6_0.2_0.npz'.format(org))
 train = torch.tensor(split['train_mask']).to(torch.bool)
 val   = torch.tensor(split['val_mask']).to(torch.bool)
 test  = torch.tensor(split['test_mask']).to(torch.bool)
+
+# normalize the matrix based on training
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+scaler.fit(new_matrix[train])
+new_matrix = scaler.transform(new_matrix)
+
+# dim reduction
+from sklearn.decomposition import PCA
+pca = PCA(n_components=64)
+pca.fit(new_matrix[train])
+new_matrix = pca.transform(new_matrix)
 
 # Do oversampling on the train data
 from imblearn.over_sampling import SMOTE
